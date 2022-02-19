@@ -21,9 +21,14 @@ pub mod dominari {
     pub fn init_location(ctx: Context<InitLocation>, loc:Coords) -> ProgramResult {
         let location = &mut ctx.accounts.location;
         location.initalizer = ctx.accounts.initalizer.key();
-        location.coords = loc;
+        location.coords = loc.clone();
         location.feature = Feature::None;
         
+        emit!(NewLocationInitalized {
+            coords: loc,
+            initializer: location.initalizer
+        });
+
         Ok(())
     }
 

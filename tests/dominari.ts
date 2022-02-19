@@ -7,6 +7,8 @@ import {bs58} from '@project-serum/anchor/dist/cjs/utils/bytes';
 import fs from 'fs';
 import NodeWallet from '@project-serum/anchor/dist/cjs/nodewallet';
 
+import * as byteify from 'byteify';
+
 /*
 describe('dominari', () => {
 
@@ -54,16 +56,20 @@ describe('dominari', () => {
 
   it('Location Initalized', async () => {
     const coords = {
-      nx: new anchor.BN(0),
-      ny: new anchor.BN(-1),
-      x: new anchor.BN(2),
-      y: new anchor.BN(-178)
+      nx: new anchor.BN(0),   //0
+      ny: new anchor.BN(-1),   //-1
+      x: new anchor.BN(0),    //2
+      y: new anchor.BN(0)     //-178
     }
+    
+    //console.log(coords.ny.toBuffer('be'));
+    console.log(coords.ny);
+
     //const addr = findProgramAddressSync([new anchor.BN(0).toArrayLike(Buffer, "be", 8)], dominari.programId);
     //console.log(addr.toString());
     //await dominari.methods.debug(coords).rpc();
   
-    const [loc_address, loc_bump] = findProgramAddressSync([coords.nx.toArrayLike(Buffer, "be", 8), coords.ny.toArrayLike(Buffer, "be", 8), coords.x.toArrayLike(Buffer, "be", 8), coords.y.toArrayLike(Buffer, "be", 8)], dominari.programId)    
+    const [loc_address, loc_bump] = findProgramAddressSync([byteify.serializeInt64(coords.nx.toNumber()), byteify.serializeInt64(coords.ny.toNumber()), byteify.serializeInt64(coords.x.toNumber()), byteify.serializeInt64(coords.y.toNumber())], dominari.programId)    
     console.log(loc_address.toString())
 
     await dominari.methods.initLocation(coords).accounts({
