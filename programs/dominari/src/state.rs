@@ -1,6 +1,6 @@
 use anchor_lang::prelude::*;
 
-#[derive(AnchorSerialize, AnchorDeserialize, Clone, Debug)]
+#[derive(AnchorSerialize, AnchorDeserialize, Clone, Debug, Copy)]
 pub struct Coords {
     pub nx: i64,
     pub ny: i64,
@@ -8,16 +8,15 @@ pub struct Coords {
     pub y: i64
 }
 
-#[derive(AnchorSerialize, AnchorDeserialize, Clone, Debug)]
+#[derive(AnchorSerialize, AnchorDeserialize, Clone, Debug, PartialEq)]
 pub enum Feature {
-    None, 
     Portal, 
     LootableFeature,
     Healer,
 }
 
 impl Default for Feature {
-    fn default() -> Self {Feature::None}
+    fn default() -> Self {Feature::Portal}
 }
 
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, Debug)]
