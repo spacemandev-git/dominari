@@ -62,6 +62,79 @@ pub struct DebugBuild<'info> {
     pub system_program: Program<'info, System>
 }
 
+#[derive(Accounts)]
+#[instruction(coords: Coords)]
+pub struct InitGame<'info>{
+    pub authority: Signer<'info>,
+    pub system_program: Program<'info, System>,
+    #[account(init,
+        seeds = [
+            coords.nx.to_be_bytes().as_ref(),
+            coords.ny.to_be_bytes().as_ref()
+        ],
+        bump,
+        payer = authority
+    )]
+    pub game: Account<'info, Game>
+}
+
+#[derive(Accounts)]
+pub struct RegisterPlayer<'info>{
+    pub authority: Signer<'info>,
+    pub system_program: Program<'info, System>,
+    #[account(
+        constraint = game.enabled == true
+    )]
+    pub game: Account<'info, Game>,
+    #[account(init,
+        seeds = [
+            game.key().as_ref(),
+            authority.key.as_ref()
+        ],
+        bump,
+        payer=authority,
+        space=8+10000
+    )]
+    pub player: Account<'info, Player>
+}
+
+#[derive(Accounts)]
+#[instruction(id:u8, cards:Vec<Card>)]
+pub struct InitDropTable<'info>{
+    pub authority: Signer<'info>,
+    pub system_program: Program<'info, System>,
+    #[account(
+        constraint = game.authority == authority.key()
+    )]
+    pub game: Account<'info, Game>,
+    #[account(init,
+        seeds = [
+            game.key().as_ref(),
+            id.to_be_bytes().as_ref()
+        ],
+        bump,
+        payer=authority,
+        space = 8+10000
+    )]
+    pub drop_table_acc: Account<'info, DropTable>
+}
+
+#[derive(Accounts)]
+pub struct PlayCard<'info>{
+    #[account(
+        mut,
+        has_one = authority,
+        constraint = player.gamekey == game.key()
+    )]
+    pub player: Account<'info, Player>,
+    #[account(
+        constraint = game.enabled == true
+    )]
+    pub game: Account<'info, Game>,
+    pub authority: Signer<'info>,
+    #[account(mut)]
+    pub location: Account<'info, Location>
+}
 
 #[derive(Accounts)]
 pub struct Debug{}

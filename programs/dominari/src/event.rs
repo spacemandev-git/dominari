@@ -13,3 +13,10 @@ pub struct FeatureModified {
     pub coords: Coords,
     pub feature: Option<Feature>
 }
+
+#[event]
+pub struct NewPlayerRegistered {
+    pub gamekey: Pubkey,
+    pub playerkey: Pubkey,
+    pub playername: String
+}

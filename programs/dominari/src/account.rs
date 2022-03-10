@@ -1,7 +1,7 @@
 use anchor_lang::prelude::*;
 use crate::state::*;
 
-#[account]
+#[account] //NOT deriving default here cause manually allocating space
 pub struct Location {
     pub initalizer: Pubkey,
     pub bump: u8,
@@ -21,4 +21,26 @@ pub struct SpaceMetadata {
     pub price: u64,
     pub space_x: i64,
     pub space_y: i64,
+}
+
+#[account]
+#[derive(Default)]
+pub struct Game {
+    pub coords: Coords,
+    pub authority: Pubkey,
+    pub enabled: bool    
+}
+
+#[account]
+pub struct Player {
+    pub gamekey: Pubkey,
+    pub authority: Pubkey,
+    pub name: String,
+    pub cards: Vec<Card>, //max u16 (65565 cards)
+}
+
+#[account]
+pub struct DropTable {
+    pub id: u8, //ID of the drop table
+    pub cards: Vec<Card>,
 }
