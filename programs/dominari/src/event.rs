@@ -20,3 +20,12 @@ pub struct NewPlayerRegistered {
     pub playerkey: Pubkey,
     pub playername: String
 }
+
+#[event]
+pub struct TroopsMoved {
+    pub gamekey: Pubkey, 
+    pub player: Pubkey,
+    pub source: Coords, 
+    pub target: Coords,
+    pub troops: Troop
+}

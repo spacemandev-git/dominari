@@ -137,4 +137,19 @@ pub struct PlayCard<'info>{
 }
 
 #[derive(Accounts)]
+pub struct UnitAction<'info>{
+    #[account(
+        constraint = game.enabled == true
+    )]
+    pub game: Account<'info, Game>,
+    #[account(mut)]
+    pub source: Account<'info, Location>,
+    #[account(mut)]
+    pub target: Account<'info, Location>,
+    #[account(has_one=authority)]
+    pub player: Account<'info, Player>,
+    pub authority: Signer<'info>
+}
+
+#[derive(Accounts)]
 pub struct Debug{}

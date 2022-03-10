@@ -262,6 +262,61 @@ pub mod dominari {
     }
 
     // A player can move troops between Locations
+    pub fn move_troops(ctx:Context<UnitAction>) -> ProgramResult {
+        let game = &ctx.accounts.game;
+        let source =  &mut ctx.accounts.source;
+        let target = &mut ctx.accounts.target;
+        let player = &ctx.accounts.player;
+
+        //Source loc must have troops (and their gamekey must be this game's key) and target must not
+        if source.troops == None ||
+        source.troops.as_ref().unwrap().gamekey != game.key() ||
+        (target.troops != None && target.troops.as_ref().unwrap().gamekey == game.key())
+        {
+            return Err(CustomError::InvalidMove.into())
+        }
+
+        //Move must be to an adjacent tile
+        if source.coords.x < target.coords.x-1 ||
+        source.coords.x > target.coords.x+1 || 
+        source.coords.y < target.coords.y-1 ||
+        source.coords.y > target.coords.y+1 
+        {
+            return Err(CustomError::InvalidMove.into())
+        } 
+
+        //source troops must belong to the player
+        if source.troop_owner != Some(player.key()) {
+            return Err(CustomError::InvalidMove.into())
+        }
+        
+        //source troops must have surpassed their recovery threshold
+        let clock = Clock::get().unwrap();
+        let troops = source.troops.as_ref().unwrap();
+        if clock.slot < (troops.last_moved + troops.data.recovery as u64) {
+            return Err(CustomError::InvalidMove.into());
+        }
+
+        //Move the troops
+        let mut modified_troops = source.troops.as_ref().unwrap().clone();
+        modified_troops.last_moved = clock.slot;
+        target.troops = Some(modified_troops);
+        target.troop_owner = Some(player.key());
+        source.troops = None;
+        source.troop_owner = None;
+
+        emit!(TroopsMoved {
+            gamekey: game.key(),
+            player: player.key(),
+            source: source.coords,
+            target: target.coords,
+            troops: target.troops.as_ref().unwrap().clone()
+        });
+
+        Ok(())
+    }
+
+
     // A player can attack other troops
     // A player can harvest a location if they were the first ones to initalize it
     // A player can loot a location if it's lootable and they pay the fee associated with it
