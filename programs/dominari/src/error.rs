@@ -19,4 +19,7 @@ pub enum CustomError {
 
     #[msg("Invalid Move")]
     InvalidMove,
+
+    #[msg("Invalid Attack")]
+    InvalidAttack,
 }

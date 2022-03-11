@@ -2,6 +2,9 @@ use anchor_lang::prelude::*;
 use anchor_lang::solana_program::borsh::try_from_slice_unchecked;
 use anchor_lang::solana_program::system_instruction::transfer;
 use anchor_lang::solana_program::program::invoke_signed;
+use anchor_lang::solana_program::hash::*;
+
+use std::convert::TryInto;
 
 mod error;
 mod context;
@@ -318,6 +321,107 @@ pub mod dominari {
 
 
     // A player can attack other troops
+    pub fn attack(ctx:Context<UnitAction>) -> ProgramResult {
+        let game = &ctx.accounts.game;
+        let source = &mut ctx.accounts.source;
+        let target = &mut ctx.accounts.target;
+        let player = &ctx.accounts.player;
+        
+        //If troops are NONE will throw an error
+        let attacking = source.troops.as_ref().unwrap();
+        let defending = target.troops.as_ref().unwrap();
+
+        //Source Troops belong to the player and target troops DO NOT
+        if source.troop_owner != Some(player.key()) || 
+        target.troop_owner == Some(player.key()) {
+            return Err(CustomError::InvalidAttack.into())
+        }
+
+        //Troops from source and target both belong to THIS game.
+        if attacking.gamekey != game.key() || defending.gamekey != game.key() {
+            return Err(CustomError::InvalidAttack.into())
+        }
+
+        //source and target are within range of the attacking troops
+        let distance:f64 = (((target.coords.x - source.coords.x).pow(2) + (target.coords.y - source.coords.y).pow(2)) as f64).sqrt();
+        if distance > attacking.data.range.into() {
+            return Err(CustomError::InvalidAttack.into())
+        }
+
+        //attacking troops have recovered from previous move
+        let clock = Clock::get().unwrap();
+            //u64 can be inferred here because it's not a mod, so it will always be positive 
+        if (attacking.last_moved + attacking.data.recovery as u64) < clock.slot {
+            return Err(CustomError::InvalidAttack.into())
+        }
+        
+        if attacking.data.range == 1 {
+            let attacking_dmg = get_atk(&attacking, &defending, 0);
+            let defending_dmg = get_atk(&defending, &attacking, 1);
+
+            emit!(Combat { 
+                gamekey: game.key(),
+                source: source.coords,
+                target: target.coords,
+                attacking_player: source.troop_owner.unwrap(),
+                defending_player: target.troop_owner.unwrap(),
+                attacking_troops: attacking.clone(),
+                defending_troops: defending.clone(),
+                attacking_dmg: attacking_dmg,
+                defending_dmg: defending_dmg
+            });
+
+            let def_result = defending.data.power as i16 - attacking_dmg as i16;
+            if def_result <= 0 {
+                //defending troops wiped out
+                target.troops = None;
+                target.troop_owner = None;
+            } else {
+                let mut modified_defending = defending.clone();
+                modified_defending.data.power = def_result as i8;
+                target.troops = Some(modified_defending);
+            }
+
+            let atk_result = attacking.data.power as i16 - defending_dmg as i16;
+            if atk_result <= 0 {
+                //attacking troops wiped out
+                source.troops = None;
+                source.troop_owner = None;
+            } else {
+                let mut modified_attacking = attacking.clone();
+                modified_attacking.data.power = atk_result as i8;
+                source.troops = Some(modified_attacking);
+            }
+        }  else {
+            //Range > 1 means that defending doesn't get an attack back
+            let attacking_dmg = get_atk(&attacking, &defending, 0);
+            emit!(Combat { 
+                gamekey: game.key(),
+                source: source.coords,
+                target: target.coords,
+                attacking_player: source.troop_owner.unwrap(),
+                defending_player: target.troop_owner.unwrap(),
+                attacking_troops: attacking.clone(),
+                defending_troops: defending.clone(),
+                attacking_dmg: attacking_dmg,
+                defending_dmg: 0
+            });
+
+            let def_result = defending.data.power as i16 - attacking_dmg as i16;
+            if def_result <= 0 {
+                //defending troops wiped out
+                target.troops = None;
+                target.troop_owner = None;
+            } else {
+                let mut modified_defending = defending.clone();
+                modified_defending.data.power = def_result as i8;
+                target.troops = Some(modified_defending);
+            }
+        }
+        Ok(())
+    }
+
+
     // A player can harvest a location if they were the first ones to initalize it
     // A player can loot a location if it's lootable and they pay the fee associated with it
 
@@ -331,5 +435,39 @@ pub mod dominari {
     }
 }
 
-#[derive(Accounts)]
-pub struct Initialize {}
+/**
+ * Because of the conversions between i16 (max 65535) and u8 (max 255) the max attack can only be of power 255
+ * But this doesn't really matter as the random number can only be generated between 0-255 and mods are of type i8 and can't exceed 128
+ */
+pub fn get_atk(attacking: &Troop, defending: &Troop, idx:usize) -> u8{
+    //returns a random number between 0 to power
+    let mut attacking_power = (get_random_u8(idx) / (u8::MAX/(attacking.data.power as u8))) as i16;
+    if defending.data.class == Some(TroopClass::Infantry) {
+        attacking_power += attacking.data.mod_inf as i16;
+    } else if defending.data.class == Some(TroopClass::Armor) {
+        attacking_power += attacking.data.mod_armor as i16;
+    } else if defending.data.class == Some(TroopClass::Aircraft) {
+        attacking_power += attacking.data.mod_air as i16;
+    } 
+
+    if attacking_power < u8::MIN.into() {
+        attacking_power = u8::MIN.into();
+    }
+
+    if attacking_power > u8::MAX.into() {
+        attacking_power = u8::MAX.into();
+    }
+
+    return attacking_power as u8;
+}
+
+/**
+ * Generates a random number using the slothash[0]
+ * Idx determines where from the slot hash it pulls the random number from
+ * Useful when multiple random numbers are required, such as in 2 way combat
+ */
+pub fn get_random_u8(idx:usize) -> u8 {
+    let clock = Clock::get().unwrap();
+    let num = &hash(&clock.slot.to_be_bytes()).to_bytes()[idx];
+    return *num;
+}

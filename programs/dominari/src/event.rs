@@ -29,3 +29,16 @@ pub struct TroopsMoved {
     pub target: Coords,
     pub troops: Troop
 }
+
+#[event] 
+pub struct Combat {
+    pub gamekey: Pubkey,
+    pub source: Coords,
+    pub target: Coords,
+    pub attacking_player: Pubkey,
+    pub defending_player: Pubkey,
+    pub attacking_troops: Troop,
+    pub defending_troops: Troop,
+    pub attacking_dmg: u8,
+    pub defending_dmg: u8
+}
