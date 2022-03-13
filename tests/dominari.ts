@@ -24,7 +24,7 @@ describe('dominari', () => {
   const idl = JSON.parse(fs.readFileSync('target/idl/dominari.json').toString());
   const dominari:Program<Dominari> = new anchor.Program<Dominari>(idl, CONTRACT_ADDRESS, provider);
 
-  it('Location Initalized', async () => {
+  it('Location Initialized', async () => {
     const coords = {
       nx: new anchor.BN(0),   //0
       ny: new anchor.BN(-1),   //-1

@@ -31,17 +31,17 @@ pub mod dominari {
     use crate::constants::{FEE_BUILD_HEALER, FEE_BUILD_LOOTABLE};
 
     use super::*;
-    // Any player can initalize a space, which will have a blank feature, in any neighborhood
+    // Any player can initialize a space, which will have a blank feature, in any neighborhood
         // Requires (Nx,Ny) (Lx,Ly)
     pub fn init_location(ctx: Context<InitLocation>, loc:Coords) -> ProgramResult {
         let location = &mut ctx.accounts.location;
-        location.initalizer = ctx.accounts.initalizer.key();
+        location.initializer = ctx.accounts.initializer.key();
         location.coords = loc.clone();
         location.feature = None;
         location.bump = *ctx.bumps.get("location").unwrap();
-        emit!(NewLocationInitalized {
+        emit!(NewLocationInitialized {
             coords: loc,
-            initializer: location.initalizer
+            initializer: location.initializer
         });
 
         Ok(())
@@ -126,7 +126,7 @@ pub mod dominari {
         Ok(())
     }
 
-    // An admin can initalize a game for a specific neighborhood
+    // An admin can initialize a game for a specific neighborhood
     pub fn init_game(ctx: Context<InitGame>, coords:Coords) -> ProgramResult {
         //What should a game contain?
         // Units deployed are tied to a game, so the Location property should have a tag for current game
@@ -421,9 +421,50 @@ pub mod dominari {
         Ok(())
     }
 
-
     // A player can harvest a location if they were the first ones to initalize it
-    // A player can loot a location if it's lootable and they pay the fee associated with it
+    pub fn harvest_location(ctx:Context<Harvest>) -> ProgramResult {
+        //Account validation checked that the initializer is that of the location
+        let location = &mut ctx.accounts.location;
+        let initializer = &ctx.accounts.initializer;
+        let system = &ctx.accounts.system;
+
+        let location_seeds: &[&[u8]] = &[
+            &location.coords.nx.to_be_bytes(),
+            &location.coords.ny.to_be_bytes(),
+            &location.coords.x.to_be_bytes(),
+            &location.coords.y.to_be_bytes(),
+            &[location.bump]
+        ];
+
+        let amount_to_pay = location.lamports_invested - location.lamports_harvested;
+        location.lamports_harvested = location.lamports_invested;
+        let ix = transfer(
+            &location.key(),
+            &initializer.key(),
+            amount_to_pay
+        );
+
+        invoke_signed(
+            &ix,
+            &[
+                initializer.to_account_info(),
+                location.to_account_info(),
+                system.to_account_info()
+            ],
+            &[location_seeds]
+        )?;
+
+        emit!(LocationHarvested {
+            location: location.coords,
+            harvest_amount: amount_to_pay,
+            initializer_key: initializer.key(),
+            total_harvested: location.lamports_harvested
+        });
+
+        Ok(())
+    }
+
+    // A player can "activate" the feature on the location if it's not in cooldown for a fee
 
 
     // Debug Function

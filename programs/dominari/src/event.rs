@@ -3,7 +3,7 @@ use crate::state::*;
 use crate::account::*;
 
 #[event]
-pub struct NewLocationInitalized {
+pub struct NewLocationInitialized {
     pub coords: Coords,
     pub initializer: Pubkey
 }
@@ -41,4 +41,12 @@ pub struct Combat {
     pub defending_troops: Troop,
     pub attacking_dmg: u8,
     pub defending_dmg: u8
+}
+
+#[event]
+pub struct LocationHarvested {
+    pub location: Coords,
+    pub harvest_amount: u64,
+    pub initializer_key: Pubkey,
+    pub total_harvested: u64
 }

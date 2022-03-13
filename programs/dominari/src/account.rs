@@ -3,7 +3,7 @@ use crate::state::*;
 
 #[account] //NOT deriving default here cause manually allocating space
 pub struct Location {
-    pub initalizer: Pubkey,
+    pub initializer: Pubkey,
     pub bump: u8,
     pub coords: Coords,
     pub lamports_invested: u64,

@@ -14,12 +14,12 @@ pub struct InitLocation<'info>{
         //(Nx, Ny) (Lx, Ly)
         seeds=[loc.nx.to_be_bytes().as_ref(), loc.ny.to_be_bytes().as_ref(), loc.x.to_be_bytes().as_ref(), loc.y.to_be_bytes().as_ref()],
         bump,
-        payer=initalizer,
+        payer=initializer,
         space=8+1024
     )]
     pub location: Account<'info, Location>,
     #[account(mut)]
-    pub initalizer: Signer<'info>,
+    pub initializer: Signer<'info>,
     pub system_program: Program<'info, System>
 }
 
@@ -49,8 +49,6 @@ pub struct Build<'info>{
     
     #[account(mut)]
     pub builder: Signer<'info>,
-    #[account(mut)]
-    pub initalizer: AccountInfo<'info>
 }
 
 #[derive(Accounts)]
@@ -149,6 +147,17 @@ pub struct UnitAction<'info>{
     #[account(has_one=authority)]
     pub player: Account<'info, Player>,
     pub authority: Signer<'info>
+}
+
+#[derive(Accounts)]
+pub struct Harvest<'info>{
+    #[account(
+        mut,
+        has_one=initializer
+    )]
+    pub location: Account<'info, Location>,
+    pub initializer: Signer<'info>,
+    pub system: Program<'info, System>
 }
 
 #[derive(Accounts)]

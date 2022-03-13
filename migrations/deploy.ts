@@ -32,7 +32,7 @@ async function debug(){
   /*
   await dominari.methods.initLocation(coords).accounts({
     location: loc_address,
-    initalizer: dominari.provider.wallet.publicKey
+    initializer: dominari.provider.wallet.publicKey
   }).rpc();
   */
   const acc = await dominari.account.location.fetch(loc_address);
@@ -40,7 +40,7 @@ async function debug(){
 
   //const mainnet = new anchor.web3.Connection('https://ssc-dao.genesysgo.net/');  
   const apollo_nfts = await getSpaceNFTs(apollo_keypair.publicKey, devnet);
-  const initalizedLoc:SPACENFT = apollo_nfts.find(token => token.x == 2 && token.y == -178);
+  const initializedLoc:SPACENFT = apollo_nfts.find(token => token.x == 2 && token.y == -178);
   
   const SPACE_PID = new anchor.web3.PublicKey("XSPCZghPXkWTWpvrfQ34Szpx3rwmUjsxebRFf5ckbMD");
   const [space_metadata_account, bmp] = findProgramAddressSync([
@@ -55,7 +55,7 @@ async function debug(){
     .buildLocation()
     .accounts({
       location: loc_address,
-      spaceTokenAccount: initalizedLoc.pubkey,
+      spaceTokenAccount: initializedLoc.pubkey,
       spaceMetadataAccount: space_metadata_account,
       builder: dominari.provider.wallet.publicKey
     })
