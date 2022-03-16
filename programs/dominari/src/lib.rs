@@ -24,12 +24,6 @@ declare_id!("6Qi7Vg1X2NhB3f3xc7UsfD9fwHCe9DBT7mWMRfF2A8S4");
 
 #[program]
 pub mod dominari {
-    use std::convert::TryInto;
-
-    use constants::FEE_BUILD_PORTAL;
-
-    use crate::constants::{FEE_BUILD_HEALER, FEE_BUILD_LOOTABLE};
-
     use super::*;
     // Any player can initialize a space, which will have a blank feature, in any neighborhood
         // Requires (Nx,Ny) (Lx,Ly)
@@ -47,6 +41,7 @@ pub mod dominari {
         Ok(())
     }
 
+    /*
     // Any builder can build on the space 
         // Requires NFT for the space
     pub fn build_location(ctx: Context<Build>, new_construction:Feature) -> ProgramResult {
@@ -74,22 +69,48 @@ pub mod dominari {
         msg!("Location can be editted");
         Ok(())
     }
+    */
 
-    pub fn debug_build_location(ctx: Context<DebugBuild>, new_construction:Feature) -> ProgramResult {
+    pub fn debug_build_location(ctx: Context<DebugBuild>, idx:u64) -> ProgramResult {
+        let buildables = &ctx.accounts.buildables;
         let location = &mut ctx.accounts.location;
         let builder = &ctx.accounts.builder;
         let system = &ctx.accounts.system_program;
+        let feature = buildables.buildables[idx as usize].clone();
         //Assume Location NFT Validation is successful
-
+        
+        // Check if the feature ID is the feature already on the location.
+            // If it is, upgrade it
+            // If it isn't, destry the current feature and discount the new feature by half of the cost of the old feature
+        let cost;
+        let mut new_construction: Feature = feature.clone(); //modify this based on upgrade path
         if location.feature != None {
-            location.feature = None;
-        }
+            let existing_construction = location.feature.as_ref().unwrap();
+            if existing_construction.id == feature.id {
+                // Upgrade the feature
 
-        let cost: u64 = match new_construction {
-            Feature::Portal => { FEE_BUILD_PORTAL },
-            Feature::Healer => { FEE_BUILD_HEALER },
-            Feature::LootableFeature => {FEE_BUILD_LOOTABLE}
-        };
+                // Match against the local stats for the feature because in the future, we might want to modify the local stats compared to the template that it's in buildables
+                // For example, we might in the future want to implement asteroids approach for building features with boosts
+                if existing_construction.rank == existing_construction.max_rank {
+                    return Err(CustomError::FeatureMaxRank.into())
+                }
+
+                cost = existing_construction.rank_upgrade_cost_multiplier * (existing_construction.rank +1) as u64;
+                new_construction = existing_construction.clone();
+                new_construction.rank = existing_construction.rank +1; 
+            } else {
+                // Destroy the feature and discount the new build with half the investment of the old build
+                let investment = existing_construction.rank as u64 * existing_construction.rank_upgrade_cost_multiplier;
+                let new_build_cost = (new_construction.rank_upgrade_cost_multiplier * 1).checked_sub(investment/2);
+                if new_build_cost == Some(0) || new_build_cost == None {
+                    cost = 0;
+                } else {
+                    cost = new_build_cost.unwrap();
+                }
+            }
+        } else {
+            cost = feature.rank_upgrade_cost_multiplier * 1; // cost of Rank 1 Feature of that type
+        }
 
         let location_seeds: &[&[u8]] = &[
             &location.coords.nx.to_be_bytes(),
@@ -100,11 +121,12 @@ pub mod dominari {
         ];
 
         //based on the construction pay the fee to the location account
-            //TODO: In the future, send most of it to GAME OWNER hard coded account
+        // Half the fee goes to the location, the other half goes to the GAME DAO
+
         let ix = transfer(
             &builder.key(),
             &location.key(),
-            cost as u64
+            cost
         );
 
         invoke_signed(
@@ -116,8 +138,6 @@ pub mod dominari {
         //Builder has paid the fee, let them build the feature
         location.lamports_invested += cost;
         location.feature = Some(new_construction);
-
-        //WARN: In the future, we want to validate the new_construction 
 
         emit!(FeatureModified {
             coords: location.coords,
@@ -183,6 +203,20 @@ pub mod dominari {
         Ok(())
     }
     
+    //An admin should be able to update an existing drop table.
+    //TODO
+
+    // An admin should be able to upload a new type of buildable
+    pub fn init_buildable(ctx:Context<InitBuildable>, buildables: Vec<Feature>) -> ProgramResult {
+        // This function is called during program creation to initalize the buildables object
+        let buildables_account = &mut ctx.accounts.buildables;
+        buildables_account.buildables = buildables;
+        Ok(())
+    }
+
+    // An admin should be able to add new buildables to the Game
+    //TODO
+
     // A player can play a card onto an initalized Location
     pub fn play_card(ctx:Context<PlayCard>, card_idx: u16) -> ProgramResult {
         let game = &ctx.accounts.game;

@@ -9,14 +9,35 @@ pub struct Coords {
 }
 
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, Debug, PartialEq)]
-pub enum Feature {
-    Portal, 
-    LootableFeature,
-    Healer,
+pub enum FeatureType {
+    Portal {
+        range: u64,
+        range_per_upgrade: u64
+    }, 
+    LootableFeature {
+        drop_table_ladder: Vec<u8>, //IDs for the drop tables for this lootable feature
+        drop_table_ladder_names: Vec<String> //"Camp, Town, City" etc
+    },
+    Healer {
+        power_healed_per_rank: u64
+    },
 }
 
-impl Default for Feature {
-    fn default() -> Self {Feature::Portal}
+#[derive(AnchorSerialize, AnchorDeserialize, Clone, Debug, PartialEq)]
+pub struct Feature{
+    pub id: u16,
+    pub max_rank: u8,
+    pub rank: u8,
+    pub rank_upgrade_cost_multiplier: u64,
+    pub link_rank_ladder: Vec<String>, //"small_healer.png", "medium_healer.png", etc
+    pub properties: FeatureType
+}
+
+impl Default for FeatureType {
+    fn default() -> Self {FeatureType::Portal {
+        range: 1,
+        range_per_upgrade: 0
+    }}
 }
 
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, PartialEq, Debug, Copy)]

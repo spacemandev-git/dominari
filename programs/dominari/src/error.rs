@@ -22,4 +22,7 @@ pub enum CustomError {
 
     #[msg("Invalid Attack")]
     InvalidAttack,
+
+    #[msg("Feature already at max Rank")]
+    FeatureMaxRank,
 }

@@ -57,7 +57,9 @@ pub struct DebugBuild<'info> {
     pub location: Account<'info, Location>,
     #[account(mut)]
     pub builder: Signer<'info>,
-    pub system_program: Program<'info, System>
+    pub system_program: Program<'info, System>,
+    #[account(seeds=[b"buildables"], bump)]
+    pub buildables: Account<'info, Buildables>
 }
 
 #[derive(Accounts)]
@@ -91,7 +93,7 @@ pub struct RegisterPlayer<'info>{
         ],
         bump,
         payer=authority,
-        space=8+10000
+        space=8+4096
     )]
     pub player: Account<'info, Player>
 }
@@ -101,20 +103,30 @@ pub struct RegisterPlayer<'info>{
 pub struct InitDropTable<'info>{
     pub authority: Signer<'info>,
     pub system_program: Program<'info, System>,
-    #[account(
-        constraint = game.authority == authority.key()
-    )]
-    pub game: Account<'info, Game>,
     #[account(init,
         seeds = [
-            game.key().as_ref(),
             id.to_be_bytes().as_ref()
         ],
         bump,
         payer=authority,
-        space = 8+10000
+        space = 8+2048,
+        constraint = authority.key() == Pubkey::from_str(ADMIN_KEY).unwrap()
     )]
     pub drop_table_acc: Account<'info, DropTable>
+}
+
+#[derive(Accounts)]
+pub struct InitBuildable<'info> {
+    pub authority: Signer<'info>,
+    pub system_program: Program<'info, System>,
+    #[account(init,
+        seeds = [b"buildables"],
+        bump,
+        payer=authority,
+        space=8+2048,
+        constraint = authority.key() == Pubkey::from_str(ADMIN_KEY).unwrap()
+    )]
+    pub buildables: Account<'info, Buildables>
 }
 
 #[derive(Accounts)]

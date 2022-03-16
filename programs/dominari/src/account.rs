@@ -48,5 +48,5 @@ pub struct DropTable {
 //Holds information for buildables
 #[account]
 pub struct Buildables {
-
+    pub buildables: Vec<Feature>
 }
