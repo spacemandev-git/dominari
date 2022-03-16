@@ -44,3 +44,9 @@ pub struct DropTable {
     pub id: u8, //ID of the drop table
     pub cards: Vec<Card>,
 }
+
+//Holds information for buildables
+#[account]
+pub struct Buildables {
+
+}

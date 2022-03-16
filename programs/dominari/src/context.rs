@@ -161,4 +161,18 @@ pub struct Harvest<'info>{
 }
 
 #[derive(Accounts)]
+pub struct ActivateFeature<'info> {
+    #[account(
+        mut,
+        has_one=authority
+    )]
+    pub player: Account<'info, Player>,
+    #[account(mut)]
+    pub authority: Signer<'info>,
+    
+    #[account(mut)]
+    pub location: Account<'info, Location>,
+}
+
+#[derive(Accounts)]
 pub struct Debug{}
