@@ -465,10 +465,11 @@ pub mod dominari {
     }
 
     // A player can "activate" the feature on the location if it's not in cooldown for a fee
-    pub fn activate_feature(ctx:Context<ActivateFeature>){
+    pub fn activate_feature(ctx:Context<ActivateFeature>) -> ProgramResult {
         // You can activate a 
         // Portal (Requires a second Location), Lootable Feature (Requires Drop Table), or Oasis
 
+        Ok(())
     }
 
     // Debug Function
