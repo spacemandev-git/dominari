@@ -52,6 +52,14 @@ pub struct LocationHarvested {
 }
 
 #[event]
+pub struct LocationBuilderHarvested {
+    pub location: Coords,
+    pub harvest_amount: u64,
+    pub builder_key: Pubkey,
+    pub total_harvested: u64
+}
+
+#[event]
 pub struct HealerActivated {
     pub gamekey: Pubkey,
     pub location: Coords, 

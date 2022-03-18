@@ -41,11 +41,18 @@ pub mod dominari {
         Ok(())
     }
 
-    /*
+    
     // Any builder can build on the space 
         // Requires NFT for the space
-    pub fn build_location(ctx: Context<Build>, new_construction:Feature) -> ProgramResult {
+    pub fn build_location(ctx:Context<Build>, idx:u64) -> ProgramResult {
+        let buildables = &ctx.accounts.buildables;
         let location = &mut ctx.accounts.location;
+        let builder = &ctx.accounts.builder;
+        let system = &ctx.accounts.system_program;
+        let feature = buildables.buildables[idx as usize].clone();
+        
+        
+        //NFT VERIFICATION
         let space_token = &ctx.accounts.space_token_account;
         let space_metadata = &ctx.accounts.space_metadata_account;
 
@@ -54,22 +61,75 @@ pub mod dominari {
         if space_metadata_data.mint != space_token.mint {
             return Err(CustomError::NFTNotValid.into());
         }
-
+        //NFT VERIFICATION END
+        
+        
+        // Check if the feature ID is the feature already on the location.
+            // If it is, upgrade it
+            // If it isn't, destry the current feature and discount the new feature by half of the cost of the old feature
+        let cost;
+        let mut new_construction: Feature = feature.clone(); //modify this based on upgrade path
         if location.feature != None {
-            //"Sell The Feature"
-            //Set to None
+            let existing_construction = location.feature.as_ref().unwrap();
+            if existing_construction.id == feature.id {
+                // Upgrade the feature
+
+                // Match against the local stats for the feature because in the future, we might want to modify the local stats compared to the template that it's in buildables
+                // For example, we might in the future want to implement asteroids approach for building features with boosts
+                if existing_construction.rank == existing_construction.max_rank {
+                    return Err(CustomError::FeatureMaxRank.into())
+                }
+
+                cost = existing_construction.rank_upgrade_cost_multiplier * (existing_construction.rank +1) as u64;
+                new_construction = existing_construction.clone();
+                new_construction.rank = existing_construction.rank +1; 
+            } else {
+                // Destroy the feature and discount the new build with half the investment of the old build
+                let investment = existing_construction.rank as u64 * existing_construction.rank_upgrade_cost_multiplier;
+                let new_build_cost = (new_construction.rank_upgrade_cost_multiplier * 1).checked_sub(investment/2);
+                if new_build_cost == Some(0) || new_build_cost == None {
+                    cost = 0;
+                } else {
+                    cost = new_build_cost.unwrap();
+                }
+            }
+        } else {
+            cost = feature.rank_upgrade_cost_multiplier * 1; // cost of Rank 1 Feature of that type
         }
 
-        match new_construction {
-            Feature::Portal => {},
-            Feature::Healer => {},
-            Feature::LootableFeature => {}
-        }
+        let location_seeds: &[&[u8]] = &[
+            &location.coords.nx.to_be_bytes(),
+            &location.coords.ny.to_be_bytes(),
+            &location.coords.x.to_be_bytes(),
+            &location.coords.y.to_be_bytes(),
+            &[location.bump]
+        ];
 
-        msg!("Location can be editted");
+        //based on the construction pay the fee to the location account
+        // Half the fee goes to the location, the other half goes to the GAME DAO
+
+        let ix = transfer(
+            &builder.key(),
+            &location.key(),
+            cost
+        );
+
+        invoke_signed(
+            &ix,
+            &[builder.to_account_info(),location.to_account_info(),system.to_account_info()],
+            &[location_seeds]
+        )?;
+
+        //Builder has paid the fee, let them build the feature
+        location.lamports_invested += cost;
+        location.feature = Some(new_construction);
+
+        emit!(FeatureModified {
+            coords: location.coords,
+            feature: location.feature.as_ref().cloned()
+        });
         Ok(())
     }
-    */
 
     pub fn debug_build_location(ctx: Context<DebugBuild>, idx:u64) -> ProgramResult {
         let buildables = &ctx.accounts.buildables;
@@ -500,7 +560,58 @@ pub mod dominari {
     }
 
     // A builder can harvest a location if they own the NFT
-    //TODO
+    pub fn harvest_location_builder(ctx:Context<HarvestBuilder>) -> ProgramResult {
+        let location = &mut ctx.accounts.location;
+        let builder = &ctx.accounts.builder;
+        let system = &ctx.accounts.system;
+
+        //NFT VALIDATION
+        let space_token = &ctx.accounts.space_token_account;
+        let space_metadata = &ctx.accounts.space_metadata_account;
+
+        //Can't use the Anchor Context Account Deserialization because this account was made in native solana so it doesn't have the 8 bit descriminator that anchor looks for 
+        let space_metadata_data: SpaceMetadata = try_from_slice_unchecked(&space_metadata.data.borrow_mut())?;
+        if space_metadata_data.mint != space_token.mint {
+            return Err(CustomError::NFTNotValid.into());
+        }
+        //NFT VALIDATION END
+
+        let location_seeds: &[&[u8]] = &[
+            &location.coords.nx.to_be_bytes(),
+            &location.coords.ny.to_be_bytes(),
+            &location.coords.x.to_be_bytes(),
+            &location.coords.y.to_be_bytes(),
+            &[location.bump]
+        ];
+
+        let amount_to_pay = location.lamports_player_spent - location.lamports_builder_harvested;
+        location.lamports_builder_harvested = location.lamports_player_spent;
+
+        let ix = transfer(
+            &location.key(),
+            &builder.key(),
+            amount_to_pay
+        );
+
+        invoke_signed(
+            &ix,
+            &[
+                builder.to_account_info(),
+                location.to_account_info(),
+                system.to_account_info()
+            ],
+            &[location_seeds]
+        )?;
+
+        emit!(LocationBuilderHarvested {
+            location: location.coords.clone(),
+            harvest_amount: amount_to_pay,
+            builder_key: builder.key(),
+            total_harvested: location.lamports_builder_harvested
+        });
+
+        Ok(())
+    }
 
     // A player can "activate" the feature on the location if it's not in cooldown for a fee
     pub fn activate_feature(ctx:Context<ActivateFeature>) -> ProgramResult {

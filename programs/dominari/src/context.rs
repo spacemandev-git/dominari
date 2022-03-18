@@ -49,6 +49,9 @@ pub struct Build<'info>{
     
     #[account(mut)]
     pub builder: Signer<'info>,
+    pub system_program: Program<'info, System>,
+    #[account(seeds=[b"buildables"], bump)]
+    pub buildables: Account<'info, Buildables>
 }
 
 #[derive(Accounts)]
@@ -170,6 +173,34 @@ pub struct HarvestInitializer<'info>{
     pub location: Account<'info, Location>,
     pub initializer: Signer<'info>,
     pub system: Program<'info, System>
+}
+
+#[derive(Accounts)]
+pub struct HarvestBuilder<'info>{
+    #[account(mut)]
+    pub location: Account<'info, Location>,
+    #[account(mut)]
+    pub builder: Signer<'info>,
+    pub system: Program<'info, System>,
+    
+    //Verify NFT
+    //Check that the space_token_account owner is builder
+    #[account(
+        constraint = space_token_account.owner == builder.key()
+    )]
+    pub space_token_account: Account<'info, TokenAccount>,
+
+    #[account(
+        seeds = [
+            Pubkey::from_str(SPACE_BASE).unwrap().to_bytes().as_ref(),
+            b"space_metadata".as_ref(),
+            location.coords.x.to_le_bytes().as_ref(),
+            location.coords.y.to_le_bytes().as_ref(),
+        ],
+        bump,
+        seeds::program = Pubkey::from_str(SPACE_PID).unwrap()
+    )]
+    pub space_metadata_account: AccountInfo<'info>,
 }
 
 #[derive(Accounts)]
