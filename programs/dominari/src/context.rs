@@ -162,7 +162,7 @@ pub struct UnitAction<'info>{
 }
 
 #[derive(Accounts)]
-pub struct Harvest<'info>{
+pub struct HarvestInitializer<'info>{
     #[account(
         mut,
         has_one=initializer
@@ -184,6 +184,8 @@ pub struct ActivateFeature<'info> {
     
     #[account(mut)]
     pub location: Account<'info, Location>,
+    pub game: Account<'info, Game>,
+    pub system: Program<'info, System>
 }
 
 #[derive(Accounts)]

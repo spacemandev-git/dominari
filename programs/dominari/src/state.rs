@@ -11,8 +11,7 @@ pub struct Coords {
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, Debug, PartialEq)]
 pub enum FeatureType {
     Portal {
-        range: u64,
-        range_per_upgrade: u64
+        range_per_rank: u64
     }, 
     LootableFeature {
         drop_table_ladder: Vec<u8>, //IDs for the drop tables for this lootable feature
@@ -29,14 +28,14 @@ pub struct Feature{
     pub max_rank: u8,
     pub rank: u8,
     pub rank_upgrade_cost_multiplier: u64,
+    pub cost_for_use_ladder: Vec<u64>,
     pub link_rank_ladder: Vec<String>, //"small_healer.png", "medium_healer.png", etc
     pub properties: FeatureType
 }
 
 impl Default for FeatureType {
     fn default() -> Self {FeatureType::Portal {
-        range: 1,
-        range_per_upgrade: 0
+        range_per_rank: 1
     }}
 }
 
@@ -83,8 +82,8 @@ pub struct MetaInformation {
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, PartialEq, Debug)]
 pub enum CardData {
     ACTION, // Unlikely to need a struct as it'll all be custom coded by name or id of the card
-    MOD (StatInfo),
-    UNIT (StatInfo)
+    MOD { stats: StatInfo },
+    UNIT { stats: StatInfo }
 }
 
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, PartialEq, Debug)]
@@ -92,6 +91,7 @@ pub struct StatInfo {
     pub class: Option<TroopClass>,
     pub range: i8,
     pub power: i8,
+    pub max_power: i8,
     pub mod_inf: i8,
     pub mod_armor: i8,
     pub mod_air: i8,

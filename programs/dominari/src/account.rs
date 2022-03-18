@@ -6,11 +6,13 @@ pub struct Location {
     pub initializer: Pubkey,
     pub bump: u8,
     pub coords: Coords,
-    pub lamports_invested: u64,
+    pub lamports_invested: u64, // How many lamporst a builder has spent to build a Feature on this location
+    pub lamports_harvested: u64,    // How many lamports the initializer has claimed
     pub feature: Option<Feature>,
-    pub lamports_harvested: u64,
+    pub lamports_player_spent: u64, // How many lamports the players have spent using the features on this tile
+    pub lamports_builder_harvested: u64, // How many lamports the builder has collected from spent
     pub troops: Option<Troop>,
-    pub troop_owner: Option<Pubkey>
+    pub troop_owner: Option<Pubkey> //player ACCOUNT not player key
 }
 
 #[account]

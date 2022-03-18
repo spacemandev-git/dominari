@@ -24,14 +24,16 @@ describe('dominari', () => {
   const idl = JSON.parse(fs.readFileSync('target/idl/dominari.json').toString());
   const dominari:Program<Dominari> = new anchor.Program<Dominari>(idl, CONTRACT_ADDRESS, provider);
 
+
+  const coords = {
+    nx: new anchor.BN(0),   //0
+    ny: new anchor.BN(-1),   //-1
+    x: new anchor.BN(2),    //2
+    y: new anchor.BN(-178)     //-178
+  }
+  
+
   it('Location Initialized', async () => {
-    const coords = {
-      nx: new anchor.BN(0),   //0
-      ny: new anchor.BN(-1),   //-1
-      x: new anchor.BN(2),    //2
-      y: new anchor.BN(-178)     //-178
-    }
-    
     //console.log(coords.ny.toBuffer('be'));
     const [loc_address, loc_bump] = findProgramAddressSync([byteify.serializeInt64(coords.nx.toNumber()), byteify.serializeInt64(coords.ny.toNumber()), byteify.serializeInt64(coords.x.toNumber()), byteify.serializeInt64(coords.y.toNumber())], dominari.programId)    
     console.log(loc_address.toString())
@@ -79,6 +81,7 @@ describe('dominari', () => {
 
     const newConstruction = {"healer": {}}
 
+    /*
     await dominari.methods
       .buildLocation(newConstruction)
       .accounts({
@@ -88,34 +91,24 @@ describe('dominari', () => {
         builder: dominari.provider.wallet.publicKey
       })
       .rpc();
+    */
   })
   
-  it('DEBUG: Builds a City on Location', async () => {
-    //init loc
-    const coords = {
-      nx: new anchor.BN(0),   //0
-      ny: new anchor.BN(-1),   //-1
-      x: new anchor.BN(2),    //2
-      y: new anchor.BN(-178)     //-178
-    }
-
-    const [loc_address, loc_bump] = findProgramAddressSync([byteify.serializeInt64(coords.nx.toNumber()), byteify.serializeInt64(coords.ny.toNumber()), byteify.serializeInt64(coords.x.toNumber()), byteify.serializeInt64(coords.y.toNumber())], dominari.programId);    
-
-    const newConstruction = {"healer": {}}
-
-    console.log(await dominari.account.location.getAccountInfo(loc_address));
+  it('DEBUG', async () => {
+    const [loc_address, loc_bump] = findProgramAddressSync([byteify.serializeInt64(coords.nx.toNumber()), byteify.serializeInt64(coords.ny.toNumber()), byteify.serializeInt64(coords.x.toNumber()), byteify.serializeInt64(coords.y.toNumber())], dominari.programId)    
+    console.log(await dominari.account.location.fetch(loc_address));
     await dominari.methods
-      .debugBuildLocation(newConstruction)
-      .accounts({
-        location: loc_address,
-        builder: dominari.provider.wallet.publicKey
-      })
-      .rpc(); 
-    
-    console.log("After build:");
-    console.log((await dominari.account.location.fetch(loc_address)).lamportsInvested.toNumber());
-    console.log(await dominari.account.location.getAccountInfo(loc_address));
-
+    .debug()
+    .accounts()
+    .signers()
+    .remainingAccounts([
+      {
+        pubkey: loc_address,
+        isWritable: false,
+        isSigner: false
+      }
+    ])
+    .rpc()
   })
 })
 

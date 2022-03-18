@@ -50,3 +50,29 @@ pub struct LocationHarvested {
     pub initializer_key: Pubkey,
     pub total_harvested: u64
 }
+
+#[event]
+pub struct HealerActivated {
+    pub gamekey: Pubkey,
+    pub location: Coords, 
+    pub troops: Troop,
+    pub player: Pubkey,
+}
+
+#[event]
+pub struct PortalActivated {
+    pub gamekey: Pubkey,
+    pub location: Coords,
+    pub destination: Coords,
+    pub troops: Troop,
+    pub player: Pubkey,
+}
+
+#[event]
+pub struct LocationLooted {
+    pub gamekey: Pubkey,
+    pub location: Coords,
+    pub player: Pubkey,
+    pub drop_table: u8,
+    pub card: Card
+}

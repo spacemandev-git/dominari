@@ -172,16 +172,17 @@ pub mod dominari {
                 description: String::from("A basic Scout unit"),
                 link: String::from("Scout.png")
             },
-            data: CardData::UNIT(
-                StatInfo {
+            data: CardData::UNIT {
+                stats: StatInfo {
                     class: Some(TroopClass::Infantry),
                     range: 1,
                     power: 6,
+                    max_power: 6,
                     mod_inf: 0,
                     mod_armor: 0,
                     mod_air: 0,
                     recovery: 60
-            })
+            }}
         };
 
         player.cards.push(starting_card);
@@ -230,58 +231,58 @@ pub mod dominari {
             CardData::ACTION => {
                 //TODO
             },
-            CardData::MOD(unitmod) => {
+            CardData::MOD {stats} => {
                 //Manual math is needed to ensure no values go into the invalid ranges (the top three values are unsigned, but the mod is signed)
 
                 if location.troops == None || location.troops.as_ref().unwrap().gamekey != game.key() {
                     return Err(CustomError::InvalidLocation.into())
                 }
 
-                if unitmod.class != None && location.troops.as_ref().unwrap().data.class != unitmod.class {
+                if stats.class != None && location.troops.as_ref().unwrap().data.class != stats.class {
                     return Err(CustomError::UnitClassMismatch.into())
                 }
 
                 let mut modified_troops = location.troops.as_ref().unwrap().clone();
 
-                if unitmod.range < 0 {
-                    modified_troops.data.range = modified_troops.data.range.saturating_sub(unitmod.range.abs().try_into().unwrap());
+                if stats.range < 0 {
+                    modified_troops.data.range = modified_troops.data.range.saturating_sub(stats.range.abs().try_into().unwrap());
                     if modified_troops.data.range == 0 {
                         //Can't equip a mod that reduces range to 0 as that's an invalid range
                         return Err(CustomError::InvalidMod.into())
                     }
                 } else {
-                    modified_troops.data.range = modified_troops.data.range.saturating_add(unitmod.range.abs().try_into().unwrap());
+                    modified_troops.data.range = modified_troops.data.range.saturating_add(stats.range.abs().try_into().unwrap());
                 } 
 
 
-                if unitmod.power < 0 {
-                    modified_troops.data.power = modified_troops.data.power.saturating_sub(unitmod.power.abs().try_into().unwrap());
+                if stats.power < 0 {
+                    modified_troops.data.power = modified_troops.data.power.saturating_sub(stats.power.abs().try_into().unwrap());
                     if modified_troops.data.power == 0 {
                         //equipping a mod that reduces power to 0 would kill the unit
                         return Err(CustomError::InvalidMod.into())
                     }
                 } else {
-                    modified_troops.data.power = modified_troops.data.power.saturating_add(unitmod.power.abs().try_into().unwrap());
+                    modified_troops.data.power = modified_troops.data.power.saturating_add(stats.power.abs().try_into().unwrap());
                 } 
 
 
-                if unitmod.recovery < 0 {
-                    modified_troops.data.recovery = modified_troops.data.recovery.saturating_sub(unitmod.recovery.abs().try_into().unwrap());
+                if stats.recovery < 0 {
+                    modified_troops.data.recovery = modified_troops.data.recovery.saturating_sub(stats.recovery.abs().try_into().unwrap());
                     if modified_troops.data.recovery == 0 {
                         //recovery of 0 means that there's not even a slot delay between unit moves, making an impossibly fast unit
                         return Err(CustomError::InvalidMod.into())
                     }
                 } else {
-                    modified_troops.data.recovery = modified_troops.data.recovery.saturating_add(unitmod.recovery.abs().try_into().unwrap());
+                    modified_troops.data.recovery = modified_troops.data.recovery.saturating_add(stats.recovery.abs().try_into().unwrap());
                 } 
 
 
-                modified_troops.data.mod_inf = modified_troops.data.mod_inf.saturating_add(unitmod.mod_inf);
-                modified_troops.data.mod_armor = modified_troops.data.mod_armor.saturating_add(unitmod.mod_armor);
-                modified_troops.data.mod_air = modified_troops.data.mod_air.saturating_add(unitmod.mod_air);
+                modified_troops.data.mod_inf = modified_troops.data.mod_inf.saturating_add(stats.mod_inf);
+                modified_troops.data.mod_armor = modified_troops.data.mod_armor.saturating_add(stats.mod_armor);
+                modified_troops.data.mod_air = modified_troops.data.mod_air.saturating_add(stats.mod_air);
                 location.troops = Some(modified_troops);
             },
-            CardData::UNIT(unit) => {
+            CardData::UNIT {stats} => {
                 //If location is NOT EMPTY && the troops BELONG TO THIS GAME it's an invalid location
                 // If it's NOT EMPTY but the troops belong to a different game, it doesn't really matter
                 if location.troops != None && location.troops.as_ref().unwrap().gamekey == game.key() {
@@ -289,7 +290,7 @@ pub mod dominari {
                 }
                 location.troops = Some(Troop {
                     meta: card.meta,
-                    data: unit,
+                    data: stats,
                     last_moved: clock.slot,
                     gamekey: game.key()
                 })   
@@ -456,7 +457,7 @@ pub mod dominari {
     }
 
     // A player can harvest a location if they were the first ones to initalize it
-    pub fn harvest_location(ctx:Context<Harvest>) -> ProgramResult {
+    pub fn harvest_location_initializer(ctx:Context<HarvestInitializer>) -> ProgramResult {
         //Account validation checked that the initializer is that of the location
         let location = &mut ctx.accounts.location;
         let initializer = &ctx.accounts.initializer;
@@ -498,16 +499,125 @@ pub mod dominari {
         Ok(())
     }
 
+    // A builder can harvest a location if they own the NFT
+    //TODO
+
     // A player can "activate" the feature on the location if it's not in cooldown for a fee
     pub fn activate_feature(ctx:Context<ActivateFeature>) -> ProgramResult {
-        // You can activate a 
         // Portal (Requires a second Location), Lootable Feature (Requires Drop Table), or Oasis
+        let player_acc = &mut ctx.accounts.player;
+        let player = &ctx.accounts.authority;
+        let location = &mut ctx.accounts.location;
+        let game = &ctx.accounts.game;
+        let system =  &ctx.accounts.system;
 
+        if location.troop_owner != Some(player_acc.key()) && location.troops.as_ref().unwrap().gamekey == game.key()  {
+            return Err(CustomError::NoTroopOnBuilding.into())
+        }
+        
+        //Will panic and exit if no feature exists on the location
+        let feature = location.feature.as_ref().unwrap().clone();
+
+        //Activate the feature
+        match feature.properties {
+            FeatureType::Healer { power_healed_per_rank } => {
+                let heal_bonus = power_healed_per_rank * feature.rank as u64;
+                let mut modified_troops = location.troops.as_ref().unwrap().clone();
+                modified_troops.data.power += heal_bonus as i8;
+                if modified_troops.data.power > modified_troops.data.max_power {
+                    modified_troops.data.power = modified_troops.data.max_power;
+                }
+                location.troops = Some(modified_troops);
+
+                emit!(HealerActivated {
+                    gamekey: game.key(),
+                    location: location.coords.clone(),
+                    troops: location.troops.as_ref().unwrap().clone(),
+                    player: player_acc.key()
+                })
+            },
+            FeatureType::Portal {
+                range_per_rank
+            } => {
+                let mut destination: Account<Location> = Account::try_from(&ctx.remaining_accounts[0])?;
+                let effective_range = range_per_rank * feature.rank as u64;
+                let distance:f64 = (((destination.coords.x - location.coords.x).pow(2) + (destination.coords.y - location.coords.y).pow(2)) as f64).sqrt();
+                
+                //Destination is out of range
+                if (effective_range as f64) < distance {
+                    return Err(CustomError::OutOfRange.into())
+                }
+
+                //Troops from this game exist on the destination tile
+                if destination.troops != None && destination.troops.as_ref().unwrap().gamekey == game.key(){
+                    return Err(CustomError::InvalidMove.into())
+                }
+
+                destination.troops = location.troops.clone();
+                destination.troop_owner = Some(player_acc.key());
+                destination.exit(ctx.program_id)?;
+                location.troops = None;
+                location.troop_owner = None;
+
+                emit!(PortalActivated {
+                    gamekey: game.key(),
+                    location: location.coords.clone(),
+                    destination: destination.coords.clone(),
+                    troops: destination.troops.as_ref().unwrap().clone(),
+                    player: player_acc.key()
+                })
+            },
+            FeatureType::LootableFeature {
+                drop_table_ladder,
+                ..
+            } => {
+                let drop_table: Account<DropTable> = Account::try_from(&ctx.remaining_accounts[0])?;
+                if drop_table.id != drop_table_ladder[feature.rank as usize] {
+                    return Err(CustomError::InvalidDropTable.into())
+                }
+
+                let max_draw = drop_table.cards.len();
+                let draw = get_random_u64(max_draw as u64);
+                let card = drop_table.cards[draw as usize].clone();
+                player_acc.cards.push(card.clone());
+                emit!(LocationLooted {
+                    gamekey: game.key(),
+                    location: location.coords.clone(),
+                    player: player_acc.key(),
+                    drop_table: drop_table.id,
+                    card: card.clone()
+                });
+            }
+        }
+
+        //Pay the fee
+        let fee = feature.cost_for_use_ladder[feature.rank as usize];
+        let ix = transfer(
+            &player.key(),
+            &location.key(),
+            fee
+        );
+        let location_seeds: &[&[u8]] = &[
+            &location.coords.nx.to_be_bytes(),
+            &location.coords.ny.to_be_bytes(),
+            &location.coords.x.to_be_bytes(),
+            &location.coords.y.to_be_bytes(),
+            &[location.bump]
+        ];
+        invoke_signed(
+            &ix,
+            &[player.to_account_info(),location.to_account_info(),system.to_account_info()],
+            &[location_seeds]
+        )?;
+        location.lamports_player_spent += fee;
         Ok(())
     }
-
+    
     // Debug Function
     pub fn debug(ctx: Context<Debug>) -> ProgramResult {
+        msg!("{:?}", ctx.remaining_accounts);
+        let location:Account<Location> = Account::try_from(&ctx.remaining_accounts[0])?;
+        msg!("{:?}", location.initializer);
         Ok(())
     }
 }
@@ -547,4 +657,16 @@ pub fn get_random_u8(idx:usize) -> u8 {
     let clock = Clock::get().unwrap();
     let num = &hash(&clock.slot.to_be_bytes()).to_bytes()[idx];
     return *num;
+}
+
+/**
+ * Returns a random number below the Max
+ * Can replace random u8 function BUT u8 function is useful for getting multiple random numbers in a slot, which this can't do.
+ */ 
+pub fn get_random_u64(max: u64) -> u64 {
+    let clock = Clock::get().unwrap();
+    let slice = &hash(&clock.slot.to_be_bytes()).to_bytes()[0..8];
+    let num: u64 = u64::from_be_bytes(slice.try_into().unwrap());
+    let target = num/(u64::MAX/max);
+    return target;
 }

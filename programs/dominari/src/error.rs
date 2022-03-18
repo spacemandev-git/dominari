@@ -25,4 +25,13 @@ pub enum CustomError {
 
     #[msg("Feature already at max Rank")]
     FeatureMaxRank,
+
+    #[msg("You can only activate buildings that you are occupying with a troop.")]
+    NoTroopOnBuilding,
+
+    #[msg("Out of range")]
+    OutOfRange,
+
+    #[msg("Invalid Drop Table")]
+    InvalidDropTable,
 }
