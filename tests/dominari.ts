@@ -8,7 +8,6 @@ import fs from 'fs';
 import NodeWallet from '@project-serum/anchor/dist/cjs/nodewallet';
 
 import * as byteify from 'byteify';
-
 import * as nft from '@nfteyez/sol-rayz';
 
 

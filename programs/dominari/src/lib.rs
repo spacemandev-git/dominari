@@ -18,9 +18,8 @@ use error::*;
 use context::*;
 use event::*;
 use state::*;
-use constants::*;
 
-declare_id!("6Qi7Vg1X2NhB3f3xc7UsfD9fwHCe9DBT7mWMRfF2A8S4");
+declare_id!("BGYHifTqRGUnJMfugZn5sbAZqjMR6bPZ98NmLcDeb7N7");
 
 #[program]
 pub mod dominari {
@@ -413,7 +412,6 @@ pub mod dominari {
 
         Ok(())
     }
-
 
     // A player can attack other troops
     pub fn attack(ctx:Context<UnitAction>) -> ProgramResult {

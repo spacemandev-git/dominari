@@ -1,104 +1,41 @@
-import * as anchor from '@project-serum/anchor';
-import { Program } from '@project-serum/anchor';
-import { findProgramAddressSync } from '@project-serum/anchor/dist/cjs/utils/pubkey';
-import { Dominari } from '../target/types/dominari';
-
+import {Dominari} from '../js/src/dominari';
 import {bs58} from '@project-serum/anchor/dist/cjs/utils/bytes';
 import fs from 'fs';
-import NodeWallet from '@project-serum/anchor/dist/cjs/nodewallet';
 
-import * as byteify from 'byteify';
-
-import * as nft from '@nfteyez/sol-rayz';
-
-async function debug(){
-  const devnet = new anchor.web3.Connection('https://psytrbhymqlkfrhudd.dev.genesysgo.net:8899/');
-
-  const CONTRACT_ADDRESS = "6Qi7Vg1X2NhB3f3xc7UsfD9fwHCe9DBT7mWMRfF2A8S4";
-  //const connection = new anchor.web3.Connection(RPC_URL, "confirmed");
-  const apollo_keypair = anchor.web3.Keypair.fromSecretKey(bs58.decode(fs.readFileSync('tests/apollo.txt').toString()))
-  const provider = new anchor.Provider(devnet, new NodeWallet(apollo_keypair), {});
-  const idl = JSON.parse(fs.readFileSync('target/idl/dominari.json').toString());
-  const dominari:Program<Dominari> = new anchor.Program<Dominari>(idl, CONTRACT_ADDRESS, provider);
-
-  //init loc
-  const coords = {
-    nx: new anchor.BN(0),   //0
-    ny: new anchor.BN(-1),   //-1
-    x: new anchor.BN(2),    //2
-    y: new anchor.BN(-178)     //-178
-  }
-  const [loc_address, loc_bump] = findProgramAddressSync([byteify.serializeInt64(coords.nx.toNumber()), byteify.serializeInt64(coords.ny.toNumber()), byteify.serializeInt64(coords.x.toNumber()), byteify.serializeInt64(coords.y.toNumber())], dominari.programId)    
-  /*
-  await dominari.methods.initLocation(coords).accounts({
-    location: loc_address,
-    initializer: dominari.provider.wallet.publicKey
-  }).rpc();
-  */
-  const acc = await dominari.account.location.fetch(loc_address);
-  console.log(JSON.stringify(acc,null,2));
-
-  //const mainnet = new anchor.web3.Connection('https://ssc-dao.genesysgo.net/');  
-  const apollo_nfts = await getSpaceNFTs(apollo_keypair.publicKey, devnet);
-  const initializedLoc:SPACENFT = apollo_nfts.find(token => token.x == 2 && token.y == -178);
-  
-  const SPACE_PID = new anchor.web3.PublicKey("XSPCZghPXkWTWpvrfQ34Szpx3rwmUjsxebRFf5ckbMD");
-  const [space_metadata_account, bmp] = findProgramAddressSync([
-    new anchor.web3.PublicKey("XBSEZzB7ojaKgXqfCSpNbPLnuMGk3JVtSKYjXYqg7Pn").toBuffer(),
-    Buffer.from("space_metadata"),
-    byteify.serializeInt64(coords.x.toNumber()).reverse(),
-    byteify.serializeInt64(coords.y.toNumber()).reverse()
-  ], SPACE_PID);
+import * as anchor from '@project-serum/anchor';
 
 
-  await dominari.methods
-    .buildLocation()
-    .accounts({
-      location: loc_address,
-      spaceTokenAccount: initializedLoc.pubkey,
-      spaceMetadataAccount: space_metadata_account,
-      builder: dominari.provider.wallet.publicKey
-    })
-    .rpc();
+async function main(){
+    const APOLLO_KEYPAIR = anchor.web3.Keypair.fromSecretKey(bs58.decode(fs.readFileSync('tests/apollo.txt').toString()))
+    const CONN_STRING = "http://localhost:8899"; // devnet: https://psytrbhymqlkfrhudd.dev.genesysgo.net:8899/
+    const CONTRACT_ADDRESS = "BGYHifTqRGUnJMfugZn5sbAZqjMR6bPZ98NmLcDeb7N7";
+
+    const di = new Dominari(CONN_STRING, CONTRACT_ADDRESS, APOLLO_KEYPAIR);
+
+    // Init Game
+        // Init Drop Tables
+        // Init Buildables
+    //Initalize a bunch of spaces
+    //Build features on a couple spaces
+    //Register a player
+    //Play a card onto an initalized space
+    //Regiser Second player
+    //Attack first player with deployed card
+    //Move troop to feature and try out Portal and Loot and Healer
+    //Register Callback for Events that happen
 }
 
-async function getSpaceNFTs(owner: anchor.web3.PublicKey, connection: anchor.web3.Connection){
-  //fetch all nfts for owner
-  //for each that is a "space" nft, fetch the account by mint
+main();
 
-  let allNFTAccounts = await nft.getParsedNftAccountsByOwner({
-    publicAddress: owner.toString(),
-    connection: connection
-  })
-
-  let spaceNFTs:SPACENFT[] = []
-  for(let token of allNFTAccounts){
-    if(token.data.symbol == "EXT" && token.data.name.includes("Space")){
-      //^this validation is fine for now cause if there's a dupe NFT it'll get kicked out by the rust validation anyway
-      let sNFT = await nft.getParsedAccountByMint({
-        mintAddress: token.mint,
-        connection: connection
-      });
-      const x = parseInt(token.data.name.split('(')[1].split(",")[0]);
-      const y = parseInt(token.data.name.split(",")[1].split(")")[0]);
-
-      spaceNFTs.push({
-        pubkey: sNFT.pubkey,
-        mint: token.mint,
-        x: x,
-        y: y
-      })
-    }
-  }
-  return spaceNFTs;
-}
-
-export interface SPACENFT {
-  pubkey: string,
-  mint: string,
-  x: number,
-  y: number
-}
-
-
-debug();
+// Any player can initialize a space, which will have a blank feature, in any neighborhood
+// Any builder can build on the space 
+// An admin can initialize a game for a specific neighborhood
+// A player can register to play for a specific game. This gives them a starting card.
+// An admin should be able to create a new drop table with cards
+// An admin should be able to upload a new type of buildable
+// A player can play a card onto an initalized Location
+// A player can move troops between Locations
+// A player can attack other troops
+// A player can harvest a location if they were the first ones to initalize it
+// A builder can harvest a location if they own the NFT
+// A player can "activate" the feature on the location if it's not in cooldown for a fee
