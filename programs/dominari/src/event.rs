@@ -80,6 +80,6 @@ pub struct LocationLooted {
     pub gamekey: Pubkey,
     pub location: Coords,
     pub player: Pubkey,
-    pub drop_table: u8,
+    pub drop_table: u64,
     pub card: Card
 }

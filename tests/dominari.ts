@@ -16,7 +16,7 @@ describe('dominari', () => {
   //const RPC_URL = "http://api.devnet.solana.com"
   const devnet = new anchor.web3.Connection('https://psytrbhymqlkfrhudd.dev.genesysgo.net:8899/');
 
-  const CONTRACT_ADDRESS = "6Qi7Vg1X2NhB3f3xc7UsfD9fwHCe9DBT7mWMRfF2A8S4";
+  const CONTRACT_ADDRESS = "BGYHifTqRGUnJMfugZn5sbAZqjMR6bPZ98NmLcDeb7N7";
   //const connection = new anchor.web3.Connection(RPC_URL, "confirmed");
   const apollo_keypair = anchor.web3.Keypair.fromSecretKey(bs58.decode(fs.readFileSync('tests/apollo.txt').toString()))
   const provider = new anchor.Provider(localhost, new NodeWallet(apollo_keypair), {});
@@ -33,6 +33,7 @@ describe('dominari', () => {
   
 
   it('Location Initialized', async () => {
+    return;
     //console.log(coords.ny.toBuffer('be'));
     const [loc_address, loc_bump] = findProgramAddressSync([byteify.serializeInt64(coords.nx.toNumber()), byteify.serializeInt64(coords.ny.toNumber()), byteify.serializeInt64(coords.x.toNumber()), byteify.serializeInt64(coords.y.toNumber())], dominari.programId)    
     console.log(loc_address.toString())
@@ -94,12 +95,13 @@ describe('dominari', () => {
   })
   
   it('DEBUG', async () => {
-    const [loc_address, loc_bump] = findProgramAddressSync([byteify.serializeInt64(coords.nx.toNumber()), byteify.serializeInt64(coords.ny.toNumber()), byteify.serializeInt64(coords.x.toNumber()), byteify.serializeInt64(coords.y.toNumber())], dominari.programId)    
-    console.log(await dominari.account.location.fetch(loc_address));
     await dominari.methods
     .debug()
     .accounts()
     .signers()
+    .rpc()
+
+    /**
     .remainingAccounts([
       {
         pubkey: loc_address,
@@ -107,7 +109,9 @@ describe('dominari', () => {
         isSigner: false
       }
     ])
-    .rpc()
+
+     */
+
   })
 })
 

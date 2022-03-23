@@ -43,7 +43,7 @@ pub struct Player {
 
 #[account]
 pub struct DropTable {
-    pub id: u8, //ID of the drop table
+    pub id: u64, //ID of the drop table
     pub cards: Vec<Card>,
 }
 

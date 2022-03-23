@@ -68,6 +68,9 @@ pub struct DebugBuild<'info> {
 #[derive(Accounts)]
 #[instruction(coords: Coords)]
 pub struct InitGame<'info>{
+    #[account(
+        constraint = authority.key() == Pubkey::from_str(ADMIN_KEY).unwrap()
+    )]
     pub authority: Signer<'info>,
     pub system_program: Program<'info, System>,
     #[account(init,
@@ -104,6 +107,9 @@ pub struct RegisterPlayer<'info>{
 #[derive(Accounts)]
 #[instruction(id:u8, cards:Vec<Card>)]
 pub struct InitDropTable<'info>{
+    #[account(
+        constraint = authority.key() == Pubkey::from_str(ADMIN_KEY).unwrap()
+    )]
     pub authority: Signer<'info>,
     pub system_program: Program<'info, System>,
     #[account(init,
@@ -113,13 +119,15 @@ pub struct InitDropTable<'info>{
         bump,
         payer=authority,
         space = 8+2048,
-        constraint = authority.key() == Pubkey::from_str(ADMIN_KEY).unwrap()
     )]
     pub drop_table_acc: Account<'info, DropTable>
 }
 
 #[derive(Accounts)]
 pub struct InitBuildable<'info> {
+    #[account(
+        constraint = authority.key() == Pubkey::from_str(ADMIN_KEY).unwrap()
+    )]
     pub authority: Signer<'info>,
     pub system_program: Program<'info, System>,
     #[account(init,
@@ -127,7 +135,6 @@ pub struct InitBuildable<'info> {
         bump,
         payer=authority,
         space=8+2048,
-        constraint = authority.key() == Pubkey::from_str(ADMIN_KEY).unwrap()
     )]
     pub buildables: Account<'info, Buildables>
 }

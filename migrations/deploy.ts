@@ -9,8 +9,8 @@ async function main(){
     const APOLLO_KEYPAIR = anchor.web3.Keypair.fromSecretKey(bs58.decode(fs.readFileSync('tests/apollo.txt').toString()))
     const CONN_STRING = "http://localhost:8899"; // devnet: https://psytrbhymqlkfrhudd.dev.genesysgo.net:8899/
     const CONTRACT_ADDRESS = "BGYHifTqRGUnJMfugZn5sbAZqjMR6bPZ98NmLcDeb7N7";
-
-    const di = new Dominari(CONN_STRING, CONTRACT_ADDRESS, APOLLO_KEYPAIR);
+    const IDL = JSON.parse(fs.readFileSync('target/idl/dominari.json').toString());
+    const di = new Dominari(CONN_STRING, CONTRACT_ADDRESS, APOLLO_KEYPAIR, IDL);
 
     // Init Game
         // Init Drop Tables

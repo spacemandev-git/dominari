@@ -39,7 +39,6 @@ pub mod dominari {
 
         Ok(())
     }
-
     
     // Any builder can build on the space 
         // Requires NFT for the space
@@ -256,7 +255,7 @@ pub mod dominari {
     }
 
     // An admin should be able to create a new drop table with cards
-    pub fn init_drop_table(ctx:Context<InitDropTable>, id:u8, cards: Vec<Card>) -> ProgramResult {
+    pub fn init_drop_table(ctx:Context<InitDropTable>, id:u64, cards: Vec<Card>) -> ProgramResult {
         let drop_table = &mut ctx.accounts.drop_table_acc;
         drop_table.id = id;
         drop_table.cards = cards;
@@ -723,10 +722,8 @@ pub mod dominari {
     }
     
     // Debug Function
-    pub fn debug(ctx: Context<Debug>) -> ProgramResult {
-        msg!("{:?}", ctx.remaining_accounts);
-        let location:Account<Location> = Account::try_from(&ctx.remaining_accounts[0])?;
-        msg!("{:?}", location.initializer);
+    pub fn debug(ctx: Context<Debug>, debug:DEBUG) -> ProgramResult {
+        msg!("{:?}", debug.range);
         Ok(())
     }
 }

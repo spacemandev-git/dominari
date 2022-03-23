@@ -14,7 +14,7 @@ pub enum FeatureType {
         range_per_rank: u64
     }, 
     LootableFeature {
-        drop_table_ladder: Vec<u8>, //IDs for the drop tables for this lootable feature
+        drop_table_ladder: Vec<u64>, //IDs for the drop tables for this lootable feature
         drop_table_ladder_names: Vec<String> //"Camp, Town, City" etc
     },
     Healer {
@@ -52,7 +52,7 @@ impl Default for TroopClass {
 
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, Debug)]
 pub struct Card{
-    pub drop_table_id: u8,
+    pub drop_table_id: u64,
     pub id: u64,
     pub meta: MetaInformation,
     pub data: CardData   
@@ -98,3 +98,7 @@ pub struct StatInfo {
     pub recovery: i64, //How many slots til it can move again
 }
 
+#[derive(AnchorSerialize, AnchorDeserialize, Clone, PartialEq, Debug)]
+pub struct DEBUG{
+    pub range: i8
+}
