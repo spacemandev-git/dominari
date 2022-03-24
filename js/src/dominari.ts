@@ -2,13 +2,11 @@ import * as anchor from '@project-serum/anchor';
 import { Program } from '@project-serum/anchor';
 import { findProgramAddressSync } from '@project-serum/anchor/dist/cjs/utils/pubkey';
 import { Dominari as ditypes}  from '../../target/types/dominari';
-import {bs58} from '@project-serum/anchor/dist/cjs/utils/bytes';
 import NodeWallet from '@project-serum/anchor/dist/cjs/nodewallet';
-import * as fs from 'fs';
 import * as byteify from 'byteify';
 import * as nft from '@nfteyez/sol-rayz';
 import {Observable} from "rxjs";
-import * as TYPES from './types';
+import * as TYPES from './interfaces';
 
 export class Dominari {
     private _CONNECTION: anchor.web3.Connection;
@@ -427,11 +425,195 @@ export class Dominari {
         }
     }
 
-    public async moveTroops(){}
-    public async attack(){}
-    public async harvestInitialzedLocation(){}
-    public async harvestFeatureRevenue(){}
-    public async activateFeature(){}
+    /**
+     * If the destination is EMPTY, then will move the troops from the source to the destination.
+     * @param source The location the troops are being moved from.
+     * @param destination The location the troops are being moved to.
+     * @returns The destination account after the move
+     */
+    public async move(source: TYPES.Coords, destination: TYPES.Coords){
+        try {
+            if(!this.gameNX || !this.gameNY){
+                throw new Error("Please initalize a game first!");
+            }
+    
+            const [game_acc, game_bmp] = findProgramAddressSync([
+                byteify.serializeInt64(this.gameNX),
+                byteify.serializeInt64(this.gameNY)
+            ], this._PROGRAM.programId);
+    
+            const [player_acc, player_bmp] = findProgramAddressSync([
+                game_acc.toBuffer(),
+                this._PROVIDER.wallet.publicKey.toBuffer()
+            ], this._PROGRAM.programId)
+    
+            const [source_acc, source_bmp] = findProgramAddressSync([
+                byteify.serializeInt64(source.nx),
+                byteify.serializeInt64(source.ny),
+                byteify.serializeInt64(source.x),
+                byteify.serializeInt64(source.y)
+            ], this._PROGRAM.programId);
+
+            const [destination_acc, target_bmp] = findProgramAddressSync([
+                byteify.serializeInt64(destination.nx),
+                byteify.serializeInt64(destination.ny),
+                byteify.serializeInt64(destination.x),
+                byteify.serializeInt64(destination.y)
+            ], this._PROGRAM.programId);
+
+            await this._PROGRAM.methods
+                .moveTroops()
+                .accounts({
+                    game: game_acc,
+                    soruce: source_acc,
+                    target: destination_acc,
+                    player: player_acc,
+                    authority: this._PROVIDER.wallet.publicKey
+                })
+                .rpc();
+
+            return await this._PROGRAM.account.location.fetch(destination_acc);
+        } catch (e) {
+            throw e;
+        }
+    }
+
+    /**
+     * Attacks troops at the destination with the troops at the source
+     * @param source The source location of the attacking troops
+     * @param destination The destination location of the defending troops
+     * @returns The source and destination locations after the attack
+     */    
+    public async attack(source: TYPES.Coords, destination: TYPES.Coords){
+        try {
+            if(!this.gameNX || !this.gameNY){
+                throw new Error("Please initalize a game first!");
+            }
+    
+            const [game_acc, game_bmp] = findProgramAddressSync([
+                byteify.serializeInt64(this.gameNX),
+                byteify.serializeInt64(this.gameNY)
+            ], this._PROGRAM.programId);
+    
+            const [player_acc, player_bmp] = findProgramAddressSync([
+                game_acc.toBuffer(),
+                this._PROVIDER.wallet.publicKey.toBuffer()
+            ], this._PROGRAM.programId)
+    
+            const [source_acc, source_bmp] = findProgramAddressSync([
+                byteify.serializeInt64(source.nx),
+                byteify.serializeInt64(source.ny),
+                byteify.serializeInt64(source.x),
+                byteify.serializeInt64(source.y)
+            ], this._PROGRAM.programId);
+
+            const [destination_acc, destination_bmp] = findProgramAddressSync([
+                byteify.serializeInt64(destination.nx),
+                byteify.serializeInt64(destination.ny),
+                byteify.serializeInt64(destination.x),
+                byteify.serializeInt64(destination.y)
+            ], this._PROGRAM.programId);
+
+            await this._PROGRAM.methods
+                .attack()
+                .accounts({
+                    game: game_acc,
+                    soruce: source_acc,
+                    target: destination_acc,
+                    player: player_acc,
+                    authority: this._PROVIDER.wallet.publicKey
+                })
+                .rpc();
+
+            return await this._PROGRAM.account.location.fetchMultiple([source_acc,destination_acc]);
+        } catch (e) {
+            throw e;
+        }
+    }
+ 
+    /**
+     * Harvests the location of lamports that have been invested through buildings since initialization. 
+     * Can only be called by the initializer of the location. 
+     * @param location The location to harvest
+     * @returns The location object after it's been harvested
+     */
+    public async harvestInitialzedLocation(location:TYPES.Coords){
+        try {
+            const [loc_address, loc_bmp] = findProgramAddressSync([
+                byteify.serializeInt64(location.nx),
+                byteify.serializeInt64(location.ny),
+                byteify.serializeInt64(location.x),
+                byteify.serializeInt64(location.y)
+            ], this._PROGRAM.programId);
+
+            await this._PROGRAM.methods
+                .harvestLocationInitializer()
+                .accounts({
+                    location: loc_address,
+                    initializer: this._PROVIDER.wallet.publicKey,
+                    system: anchor.web3.SystemProgram.programId
+                })
+                .rpc();
+            return await this._PROGRAM.account.location.fetch(loc_address);
+
+        } catch (e) {
+            throw e;
+        }
+    }
+
+
+    /**
+     * Harvests the location of lamports that have been paid in fees for building activations.
+     * Can only be called by the owner of the space NFT.
+     * @param location The location to harvest
+     * @returns The location object after it's been harvested
+     */
+    public async harvestFeatureRevenue(location:TYPES.Coords){
+        try{
+            let ownerNFTs = await this.getSpaceNFTs();
+            let NFT:TYPES.SPACENFT = ownerNFTs.find(nft => nft.x == location.x && nft.y == location.y);
+            if (!NFT) {
+                throw new Error(`(${location.x},${location.y}) NFT not found on ${this._PROVIDER.wallet.publicKey}`);
+            }    
+
+            const [space_metadata_account, sbmp] = findProgramAddressSync([
+                this.EXTEND_BASE_PK.toBuffer(),
+                Buffer.from("space_metadata"),
+                byteify.serializeInt64(location.x).reverse(),
+                byteify.serializeInt64(location.y).reverse()
+            ], this.SPACE_PROGRAM_ID)
+
+            const [loc_address, loc_bmp] = findProgramAddressSync([
+                byteify.serializeInt64(location.nx),
+                byteify.serializeInt64(location.ny),
+                byteify.serializeInt64(location.x),
+                byteify.serializeInt64(location.y)
+            ], this._PROGRAM.programId);
+
+            await this._PROGRAM.methods
+                .harvestLocationBuilder()
+                .accounts({
+                    location: loc_address,
+                    builder: this._PROVIDER.wallet.publicKey,
+                    system: anchor.web3.SystemProgram.programId,
+                    spaceTokenAccount: NFT.pubkey,
+                    spaceMetadataAccount: space_metadata_account
+                })
+                .rpc();
+
+            return await this._PROGRAM.account.location.fetch(loc_address);
+        } catch (e) {
+
+        }
+    }
+
+
+    public async activatePortal(location:TYPES.Coords, destination:TYPES.Coords){
+        
+    }
+
+    public async activateLootableFeature(location:TYPES.Coords){}
+    public async activateHealer(location:TYPES.Coords){}
 
     /**
      * Returns all EXTEND NFTs owned by the Keypair provided in the constructor

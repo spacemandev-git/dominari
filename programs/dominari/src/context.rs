@@ -178,6 +178,7 @@ pub struct HarvestInitializer<'info>{
         has_one=initializer
     )]
     pub location: Account<'info, Location>,
+    #[account(mut)]
     pub initializer: Signer<'info>,
     pub system: Program<'info, System>
 }
