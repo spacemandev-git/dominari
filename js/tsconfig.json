@@ -1,27 +1,28 @@
 {
-  // Change this to match your project
-  "include": ["src/**/*"],
+  "include": [
+    "./src/**/*"
+  ],
   "compilerOptions": {
-    "lib": ["es2015"],
-    "target": "ES6",
-    "esModuleInterop": true,
-    "typeRoots": ["./node_modules/@types"],
-    // Tells TypeScript to read JS files, as
-    // normally they are ignored as source files
-    "allowJs": true,
-    // Generate d.ts files
+    "sourceMap": true,
     "declaration": true,
-    // This compiler run should
-    // only output d.ts files
-    "emitDeclarationOnly": false,
-    // Types should go into this directory.
-    // Removing this would place the .d.ts files
-    // next to the .js files
-    "outDir": "dist",
-    // go to js file when using IDE functions like
-    // "Go to Definition" in VSCode
     "declarationMap": true,
-    "module": "commonjs",
-    "moduleResolution": "node"
+    "allowSyntheticDefaultImports": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "noImplicitAny": false,
+    "strictNullChecks": true,
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "composite": true,
+    "baseUrl": ".",
+    "typeRoots": [
+      "types/",
+      "node_modules/@types"
+    ],
+    "paths": {
+      "@solana/web3.js": [
+        "./node_modules/@solana/web3.js/lib"
+      ]
+    }
   }
 }

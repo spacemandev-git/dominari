@@ -7,3 +7,4 @@ node_modules
 
 tests/apollo.txt
 js/dist
+js/.rollup.cache

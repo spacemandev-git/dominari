@@ -1,7 +1,7 @@
 import * as anchor from '@project-serum/anchor';
 import { Program } from '@project-serum/anchor';
 import { findProgramAddressSync } from '@project-serum/anchor/dist/cjs/utils/pubkey';
-import { Dominari as ditypes}  from '../../target/types/dominari';
+import { Dominari as ditypes}  from './idl/dominari';
 import NodeWallet from '@project-serum/anchor/dist/cjs/nodewallet';
 import * as byteify from 'byteify';
 import * as nft from '@nfteyez/sol-rayz';
@@ -121,7 +121,7 @@ export class Dominari {
      * @param y The Y coordinate of the space
      */
     public async getLocations(coords:TYPES.Coords[]){
-        let addresses = [];
+        let addresses:anchor.web3.PublicKey[] = [];
         for(let coord of coords){
             const [loc_address, loc_bump] = findProgramAddressSync([
                 byteify.serializeInt64(coord.nx),
@@ -148,7 +148,7 @@ export class Dominari {
     public async buildLocation(coord:TYPES.Coords, buildable_idx:number){
         try {
             let ownerNFTs = await this.getSpaceNFTs();
-            let NFT:TYPES.SPACENFT = ownerNFTs.find(nft => nft.x == coord.x && nft.y == coord.y);
+            let NFT:TYPES.SPACENFT | undefined = ownerNFTs.find(nft => nft.x == coord.x && nft.y == coord.y);
             if (!NFT) {
                 throw new Error(`(${coord.x},${coord.y}) NFT not found on ${this._PROVIDER.wallet.publicKey}`);
             }    
@@ -317,7 +317,8 @@ export class Dominari {
             ],this._PROGRAM.programId)
             
             await this._PROGRAM.methods
-                .initDropTable(id, cards)
+                //@ts-ignore
+                .initDropTable(new anchor.BN(id), cards)
                 .accounts({
                     authority: this._PROVIDER.wallet.publicKey,
                     systemProgram: anchor.web3.SystemProgram.programId,
@@ -571,7 +572,7 @@ export class Dominari {
     public async harvestFeatureRevenue(location:TYPES.Coords){
         try{
             let ownerNFTs = await this.getSpaceNFTs();
-            let NFT:TYPES.SPACENFT = ownerNFTs.find(nft => nft.x == location.x && nft.y == location.y);
+            let NFT:TYPES.SPACENFT | undefined = ownerNFTs.find(nft => nft.x == location.x && nft.y == location.y);
             if (!NFT) {
                 throw new Error(`(${location.x},${location.y}) NFT not found on ${this._PROVIDER.wallet.publicKey}`);
             }    
@@ -696,7 +697,10 @@ export class Dominari {
         ], this._PROGRAM.programId);
         
         const sourceData = await this._PROGRAM.account.location.fetch(source_acc);
-        const dropTableId = sourceData.feature.properties['LootableFeature']['DropTableLadder'][sourceData.feature.rank];
+        const dropTableId = sourceData?.feature?.properties['LootableFeature']['DropTableLadder'][sourceData.feature.rank];
+        if(!dropTableId){
+            throw new Error("Couldn't figure out location's Drop Table ID");
+        }
 
         const [dropTable_acc, dropTable_bmp] = findProgramAddressSync([
             byteify.serializeUint64(dropTableId)
