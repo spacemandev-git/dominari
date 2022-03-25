@@ -30,7 +30,9 @@ pub struct Feature{
     pub rank_upgrade_cost_multiplier: u64,
     pub cost_for_use_ladder: Vec<u64>,
     pub link_rank_ladder: Vec<String>, //"small_healer.png", "medium_healer.png", etc
-    pub properties: FeatureType
+    pub properties: FeatureType,
+    pub last_used: u64, //Slot it was last used in
+    pub recovery: u64 //Slots it takes to recover from being used
 }
 
 impl Default for FeatureType {

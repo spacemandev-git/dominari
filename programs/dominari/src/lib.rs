@@ -624,7 +624,14 @@ pub mod dominari {
         }
         
         //Will panic and exit if no feature exists on the location
-        let feature = location.feature.as_ref().unwrap().clone();
+        let mut feature = location.feature.as_ref().unwrap().clone();
+
+
+        //Check to see if the feature is in cooldown
+        let clock = Clock::get().unwrap();
+        if (feature.last_used + feature.recovery) < clock.slot {
+            return Err(CustomError::FeatureInCooldown.into())
+        }
 
         //Activate the feature
         match feature.properties {
@@ -676,7 +683,7 @@ pub mod dominari {
                 })
             },
             FeatureType::LootableFeature {
-                drop_table_ladder,
+                ref drop_table_ladder,
                 ..
             } => {
                 let drop_table: Account<DropTable> = Account::try_from(&ctx.remaining_accounts[0])?;
@@ -718,11 +725,13 @@ pub mod dominari {
             &[location_seeds]
         )?;
         location.lamports_player_spent += fee;
+        feature.last_used = clock.slot;
+        location.feature = Some(feature);
         Ok(())
     }
     
     // Debug Function
-    pub fn debug(ctx: Context<Debug>, debug:DEBUG) -> ProgramResult {
+    pub fn debug(_ctx: Context<Debug>, debug:DEBUG) -> ProgramResult {
         msg!("{:?}", debug.range);
         Ok(())
     }

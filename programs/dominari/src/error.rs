@@ -34,4 +34,7 @@ pub enum CustomError {
 
     #[msg("Invalid Drop Table")]
     InvalidDropTable,
+
+    #[msg("Feature in cooldown")]
+    FeatureInCooldown
 }
