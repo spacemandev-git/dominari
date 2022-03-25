@@ -607,13 +607,160 @@ export class Dominari {
         }
     }
 
+    /**
+     * COSTS SOLANA
+     * Teleports from one location to another. To find the fee, fetch the source location and see it's fee structure.
+     * @param source The source location with a portal
+     * @param destination The destination location with a portal
+     * @returns The destination location assuming the move was successful
+     */
+    public async activatePortal(source:TYPES.Coords, destination:TYPES.Coords){
+        try{
+            if(!this.gameNX || !this.gameNY){
+                throw new Error("Please initalize a game first!");
+            }
+    
+            const [game_acc, game_bmp] = findProgramAddressSync([
+                byteify.serializeInt64(this.gameNX),
+                byteify.serializeInt64(this.gameNY)
+            ], this._PROGRAM.programId);
+    
+            const [player_acc, player_bmp] = findProgramAddressSync([
+                game_acc.toBuffer(),
+                this._PROVIDER.wallet.publicKey.toBuffer()
+            ], this._PROGRAM.programId)
+    
+            const [source_acc, source_bmp] = findProgramAddressSync([
+                byteify.serializeInt64(source.nx),
+                byteify.serializeInt64(source.ny),
+                byteify.serializeInt64(source.x),
+                byteify.serializeInt64(source.y)
+            ], this._PROGRAM.programId);
 
-    public async activatePortal(location:TYPES.Coords, destination:TYPES.Coords){
-        
+            const [destination_acc, destination_bmp] = findProgramAddressSync([
+                byteify.serializeInt64(destination.nx),
+                byteify.serializeInt64(destination.ny),
+                byteify.serializeInt64(destination.x),
+                byteify.serializeInt64(destination.y)
+            ], this._PROGRAM.programId);
+
+
+            await this._PROGRAM.methods
+                .activateFeature()
+                .accounts({
+                    player: player_acc,
+                    authority: this._PROVIDER.wallet.publicKey,
+                    location: source_acc,
+                    game: game_acc,
+                    system: anchor.web3.SystemProgram.programId
+                })
+                .remainingAccounts([{
+                    isWriteable: true,
+                    isSigner: false,
+                    pubkey: destination_acc
+                }])
+                .rpc();
+            
+            return await this._PROGRAM.account.location.fetch(destination_acc);
+        } catch (e) {
+            throw e;
+        }
     }
 
-    public async activateLootableFeature(location:TYPES.Coords){}
-    public async activateHealer(location:TYPES.Coords){}
+    /**
+     * COSTS SOLANA
+     * Returns a random card from the drop table to the player's hand for a fee.
+     * @param source The location where the lootable feature is located
+     * @returns 
+     */
+    public async activateLootableFeature(source:TYPES.Coords){
+        if(!this.gameNX || !this.gameNY){
+            throw new Error("Please initalize a game first!");
+        }
+
+        const [game_acc, game_bmp] = findProgramAddressSync([
+            byteify.serializeInt64(this.gameNX),
+            byteify.serializeInt64(this.gameNY)
+        ], this._PROGRAM.programId);
+
+        const [player_acc, player_bmp] = findProgramAddressSync([
+            game_acc.toBuffer(),
+            this._PROVIDER.wallet.publicKey.toBuffer()
+        ], this._PROGRAM.programId)
+
+        const [source_acc, source_bmp] = findProgramAddressSync([
+            byteify.serializeInt64(source.nx),
+            byteify.serializeInt64(source.ny),
+            byteify.serializeInt64(source.x),
+            byteify.serializeInt64(source.y)
+        ], this._PROGRAM.programId);
+        
+        const sourceData = await this._PROGRAM.account.location.fetch(source_acc);
+        const dropTableId = sourceData.feature.properties['LootableFeature']['DropTableLadder'][sourceData.feature.rank];
+
+        const [dropTable_acc, dropTable_bmp] = findProgramAddressSync([
+            byteify.serializeUint64(dropTableId)
+        ], this._PROGRAM.programId)
+
+        await this._PROGRAM.methods
+            .activateFeature()
+            .accounts({
+                player: player_acc,
+                authority: this._PROVIDER.wallet.publicKey,
+                location: source_acc,
+                game: game_acc,
+                system: anchor.web3.SystemProgram.programId
+            })
+            .remainingAccounts([{
+                isWriteable: false,
+                isSigner: false,
+                pubkey: dropTable_acc
+            }])
+            .rpc();
+        
+        return await this._PROGRAM.account.player.fetch(player_acc);
+    }
+
+    /**
+     * COSTS SOLANA
+     * Heals the units standing on top of it an amount based on it's rank.
+     * @param source 
+     */
+    public async activateHealer(source:TYPES.Coords){
+        if(!this.gameNX || !this.gameNY){
+            throw new Error("Please initalize a game first!");
+        }
+
+        const [game_acc, game_bmp] = findProgramAddressSync([
+            byteify.serializeInt64(this.gameNX),
+            byteify.serializeInt64(this.gameNY)
+        ], this._PROGRAM.programId);
+
+        const [player_acc, player_bmp] = findProgramAddressSync([
+            game_acc.toBuffer(),
+            this._PROVIDER.wallet.publicKey.toBuffer()
+        ], this._PROGRAM.programId)
+
+        const [source_acc, source_bmp] = findProgramAddressSync([
+            byteify.serializeInt64(source.nx),
+            byteify.serializeInt64(source.ny),
+            byteify.serializeInt64(source.x),
+            byteify.serializeInt64(source.y)
+        ], this._PROGRAM.programId);
+
+        await this._PROGRAM.methods
+            .activateFeature()
+            .accounts({
+                player: player_acc,
+                authority: this._PROVIDER.wallet.publicKey,
+                location: source_acc,
+                game: game_acc,
+                system: anchor.web3.SystemProgram.programId
+            })
+            .rpc();
+
+        return await this._PROGRAM.account.location.fetch(source_acc);
+    }
 
     /**
      * Returns all EXTEND NFTs owned by the Keypair provided in the constructor

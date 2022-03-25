@@ -11,4 +11,4 @@
 
 ## Future Features
  - Set Game DAO Fee for initalization and builder harvests
- - 
+ - Add delay for being able to Activate Features

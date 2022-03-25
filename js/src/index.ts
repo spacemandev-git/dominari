@@ -1,2 +1,2 @@
 export * from './dominari'; 
-export * from './types';
+export * from './interfaces';
