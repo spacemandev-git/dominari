@@ -1,3 +1,4 @@
+#![allow(non_camel_case_types)]
 use anchor_lang::{prelude::*};
 
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, Debug, Copy, Default)]

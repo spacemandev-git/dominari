@@ -58,7 +58,7 @@ export interface Feature {
     id: number | BN,
     maxRank: number | BN,
     rank: number | BN,
-    rankUpgradeCostMulitiplier: number | BN,
+    rankUpgradeCostMultiplier: number | BN,
     costForUseLadder: number[] | BN[],
     linkRankLadder: string[],
     properties: FeatureType,

@@ -334,8 +334,6 @@ export class Dominari {
                 }
                 return card;
             });
-
-            console.debug(JSON.stringify(cards, null, 2));
             
             const [dropTableAcc, dropTableBmp] = findProgramAddressSync([
                 byteify.serializeUint64(id)
@@ -369,7 +367,7 @@ export class Dominari {
             }
 
             features = features.map(feature => {
-                feature.rankUpgradeCostMulitiplier = new anchor.BN(feature.rankUpgradeCostMulitiplier)
+                feature.rankUpgradeCostMultiplier = new anchor.BN(feature.rankUpgradeCostMultiplier)
                 feature.costForUseLadder = feature.costForUseLadder.map(cost => {
                     return new anchor.BN(cost)
                 });
@@ -382,8 +380,12 @@ export class Dominari {
                 } else if (feature.properties.portal){
                     feature.properties.portal.rangePerRank = new anchor.BN(feature.properties.portal.rangePerRank);
                 }
+                feature.lastUsed = new anchor.BN(feature.lastUsed);
+                feature.recovery = new anchor.BN(feature.recovery);
                 return feature;
             })
+
+            console.debug(features);
 
             await this._PROGRAM.methods
                 .initBuildable(features)
@@ -835,7 +837,7 @@ export class Dominari {
             }
 
             features = features.map(feature => {
-                feature.rankUpgradeCostMulitiplier = new anchor.BN(feature.rankUpgradeCostMulitiplier)
+                feature.rankUpgradeCostMultiplier = new anchor.BN(feature.rankUpgradeCostMultiplier)
                 feature.costForUseLadder = feature.costForUseLadder.map(cost => {
                     return new anchor.BN(cost)
                 });
