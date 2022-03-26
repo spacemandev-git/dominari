@@ -185,6 +185,32 @@ export class Dominari {
     }
 
     /**
+     * Can only be called by the admin. Bypasses NFT check.
+     * @param coord The coordinates of the location you want to build on.
+     * @param buildable_idx The index in buildables[] that you want to build on that location
+     * @returns The location account that's been modified which should now represent the new building
+     */
+    public async debugBuild(coord:TYPES.Coords, buildable_idx:number){
+        const [loc_address, loc_bump] = findProgramAddressSync([
+            byteify.serializeInt64(coord.nx),
+            byteify.serializeInt64(coord.ny),
+            byteify.serializeInt64(coord.x),
+            byteify.serializeInt64(coord.y)
+        ],this._PROGRAM.programId);
+
+        const tx_receipt = await this._PROGRAM.methods
+            .buildLocation(new anchor.BN(buildable_idx))
+            .accounts({
+                location: loc_address,
+                builder: this._PROVIDER.wallet.publicKey,
+                buildables: this.BUILDABLES_PK,
+                systemProgram: anchor.web3.SystemProgram.programId,
+            })
+            .rpc();
+        return await this._PROGRAM.account.location.fetch(loc_address);
+    }
+
+    /**
      * Initalizes a game at a given X,Y Coordinate
      * @param nx The neighborhood X coordinate
      * @param ny The neighborhood Y coordinate
