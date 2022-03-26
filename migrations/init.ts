@@ -6,7 +6,7 @@ import * as anchor from '@project-serum/anchor';
 
 
 export async function init(nx:number, ny:number){
-    const APOLLO_KEYPAIR = anchor.web3.Keypair.fromSecretKey(bs58.decode(fs.readFileSync('tests/apollo.txt').toString()))
+    const APOLLO_KEYPAIR = anchor.web3.Keypair.fromSecretKey(bs58.decode(fs.readFileSync('migrations/assets/apollo.txt').toString()))
     const CONN_STRING = "http://localhost:8899"; // devnet: https://psytrbhymqlkfrhudd.dev.genesysgo.net:8899/
     const CONTRACT_ADDRESS = "BGYHifTqRGUnJMfugZn5sbAZqjMR6bPZ98NmLcDeb7N7";
     const IDL = JSON.parse(fs.readFileSync('target/idl/dominari.json').toString());
