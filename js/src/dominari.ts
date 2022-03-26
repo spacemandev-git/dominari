@@ -16,7 +16,7 @@ export class Dominari {
     
     private _OBSERVABLES = {};
     public EVENTLIST = [
-        'NewLocationInitalized',
+        'NewLocationInitialized',
         'FeatureModified',
         'NewPlayerRegistered',
         'TroopsMoved',
@@ -76,6 +76,11 @@ export class Dominari {
         }
     }
 
+    /**
+     * Returns an observable for event listener
+     * @param eventName The name for the event you want to observe
+     * @returns An observable that can be subscribed to that pushes {event: event, slot: slot} as an object when it occurs
+     */
     public getEventObservable(eventName:string): Observable<any> {
         return this._OBSERVABLES[eventName];
     }
@@ -101,7 +106,7 @@ export class Dominari {
                 byteify.serializeInt64(coords.y)
             ],this._PROGRAM.programId);
 
-            const tx_receipt = await this._PROGRAM.methods
+            await this._PROGRAM.methods
                 .initLocation(bn_coords)
                 .accounts({
                     location: loc_address,
@@ -109,7 +114,7 @@ export class Dominari {
                     systemProgram: anchor.web3.SystemProgram.programId
                 })
                 .rpc();
-            return tx_receipt;    
+            return loc_address;    
         } catch (e) {
             throw e;
         }

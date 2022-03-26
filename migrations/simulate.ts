@@ -6,13 +6,53 @@
 //Regiser Second player
 //Attack first player with deployed card
 //Move troop to feature and try out Portal and Loot and Healer
+import fs from 'fs';
 
 import {Dominari} from '../js/dist/dominari';
 import {init} from './init';
 
 export async function simulate(){
-    const game:Dominari = await init(0,0);
-    console.log("Game Initalized");
+    const nx = 0; 
+    const ny = 0;
+
+    const game:Dominari = await init(nx,ny);
+
+    //SETUP LOGS
+    game.EVENTLIST.forEach((eventName,idx) => {
+        game.getEventObservable(eventName).subscribe((evt) => {
+            console.log("EVENT: ", evt);
+            fs.appendFileSync('migrations/logs/events.out', `SLOT: ${evt.slot}\nEVENT: ${evt.event}\n\n`);
+        })
+    })
+
+    //INIT 3x3 Grid
+    let locations = {};
+    let locationPromises = [];
+    for(let i=0; i<3; i++){
+        locations[i] = {};
+        for(let j=0; j<3; j++){
+            locationPromises.push(
+                game.initalizeSpace({
+                    nx: nx,
+                    ny: ny,
+                    x: i,
+                    y: j
+                }).then(loc_address => {
+                    locations[i][j] = loc_address;
+                })
+            )
+        }
+    }
+    await Promise.all(locationPromises);
+    //Print Location Addresses
+    console.log("Locations: ");
+    for(let x=0; x<3; x++){
+        for(let y=0; y<3; y++){
+            console.log(`(${x},${y}): ${locations[x][y]}`)
+        }
+    }
 }
+
+
 
 simulate();

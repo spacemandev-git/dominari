@@ -15,8 +15,8 @@ export async function init(nx:number, ny:number){
     // Init Game
     await game.initGame(nx,ny);
     console.log(`Initialized Game in Neighborhood (${nx},${ny})`)
-
-
+    //return game; // DEBUG SINCE DTs and Bs have already been initialized
+    
     // Init Drop Tables
     let droptables = yml.loadAll(fs.readFileSync('migrations/assets/droptables.yml').toString());
     let dropTablePromises = []
@@ -39,7 +39,7 @@ export async function init(nx:number, ny:number){
 }
 
 //Usually just called from simulate, but if you run the file then it'll just run init
-init(0,0);
+//init(0,0);
 
 
 // Any player can initialize a space, which will have a blank feature, in any neighborhood
