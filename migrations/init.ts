@@ -1,34 +1,42 @@
-import {Dominari} from '../js/dist/dominari';
+import {Feature, Card, Dominari} from '../js/dist/dominari';
 import {bs58} from '@project-serum/anchor/dist/cjs/utils/bytes';
 import fs from 'fs';
 import yml from 'js-yaml';
 import * as anchor from '@project-serum/anchor';
 
 
-async function main(){
+export async function init(nx:number, ny:number){
     const APOLLO_KEYPAIR = anchor.web3.Keypair.fromSecretKey(bs58.decode(fs.readFileSync('tests/apollo.txt').toString()))
     const CONN_STRING = "http://localhost:8899"; // devnet: https://psytrbhymqlkfrhudd.dev.genesysgo.net:8899/
     const CONTRACT_ADDRESS = "BGYHifTqRGUnJMfugZn5sbAZqjMR6bPZ98NmLcDeb7N7";
     const IDL = JSON.parse(fs.readFileSync('target/idl/dominari.json').toString());
-    const di = new Dominari(CONN_STRING, CONTRACT_ADDRESS, APOLLO_KEYPAIR, IDL);
-    
+    const game = new Dominari(CONN_STRING, CONTRACT_ADDRESS, APOLLO_KEYPAIR, IDL);
+
     // Init Game
-    //await di.initGame(0,0);
-        // Init Drop Tables
-    let droptables = yml.loadAll(fs.readFileSync('migrations/droptables.yaml').toString());
-    console.log(droptables);
-        // Init Buildables
-    //Initalize a bunch of spaces
-    //Build features on a couple spaces
-    //Register a player
-    //Play a card onto an initalized space
-    //Regiser Second player
-    //Attack first player with deployed card
-    //Move troop to feature and try out Portal and Loot and Healer
-    //Register Callback for Events that happen
+    await game.initGame(nx,ny);
+
+    // Init Drop Tables
+    let droptables = yml.loadAll(fs.readFileSync('migrations/assets/droptables.yml').toString());
+    let dropTablePromises = []
+    droptables.forEach((cards, idx) => {
+        dropTablePromises.push(game.initDroptable(idx+1, cards as Card[]));
+    })
+    const droptable_accs = await Promise.all(dropTablePromises);
+    droptable_accs.forEach((acc, idx) => {
+        fs.writeFileSync(`migrations/logs/${idx}_droptable.json`, JSON.stringify(acc, null,2));
+    })
+    
+    // Init Buildables
+    let features = yml.loadAll(fs.readFileSync('migrations/assets/features.yml').toString());
+    const buildable_acc = await game.initBuildable(features as Feature[]);
+    fs.writeFileSync(`migrations/logs/buildables.json`, JSON.stringify(buildable_acc, null, 2));
+    
+    return game;
 }
 
-main();
+//Usually just called from simulate, but if you run the file then it'll just run init
+init(0,0);
+
 
 // Any player can initialize a space, which will have a blank feature, in any neighborhood
 // Any builder can build on the space 
