@@ -21,7 +21,7 @@ export async function init(nx:number, ny:number){
     let droptables = yml.loadAll(fs.readFileSync('migrations/assets/droptables.yml').toString());
     let dropTablePromises = []
     droptables.forEach((cards, idx) => {
-        //dropTablePromises.push(game.initDroptable(idx+1, cards as Card[]));
+        dropTablePromises.push(game.initDroptable(idx+1, cards as Card[]));
     })
     const droptable_accs = await Promise.all(dropTablePromises);
     droptable_accs.forEach((acc, idx) => {

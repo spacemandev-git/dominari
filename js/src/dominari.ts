@@ -52,7 +52,7 @@ export class Dominari {
         _nx?:number,
         _ny?:number
     ) {
-        this._CONNECTION = new anchor.web3.Connection(_connString);
+        this._CONNECTION = new anchor.web3.Connection(_connString, "finalized");
         this._IDL = _IDL;
         this._PROVIDER = new anchor.Provider(this._CONNECTION, new NodeWallet(_KEYPAIR), {});
         this._PROGRAM = new anchor.Program<ditypes>(this._IDL, _CONTRACT_ADDRESS, this._PROVIDER);
@@ -384,8 +384,6 @@ export class Dominari {
                 feature.recovery = new anchor.BN(feature.recovery);
                 return feature;
             })
-
-            console.debug(features);
 
             await this._PROGRAM.methods
                 .initBuildable(features)

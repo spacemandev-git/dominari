@@ -9,6 +9,8 @@ sleep 5
 solana config set -u localhost
 # Deploy the program
 solana program deploy target/deploy/dominari.so
+solana account BGYHifTqRGUnJMfugZn5sbAZqjMR6bPZ98NmLcDeb7N7
+sleep 5
 # Run the Initalization Scripts
 #ts-node migrations/init.ts
 # Run the Test Game Simulation Scripts (will run init automatically)
