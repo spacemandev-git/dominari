@@ -263,7 +263,25 @@ pub mod dominari {
     }
     
     //An admin should be able to update an existing drop table.
-    //TODO
+    pub fn set_drop_table(ctx:Context<SetDropTable>, cards: Vec<Card>) -> ProgramResult{
+        let drop_table = &mut ctx.accounts.drop_table_acc;
+        drop_table.cards = cards;
+        Ok(())
+    }
+
+    // An admin should be able to add new buildables to the Game
+    pub fn set_buildable(ctx:Context<SetBuildable>, buildables: Vec<Feature>) -> ProgramResult {
+        let buildables_account = &mut ctx.accounts.buildables;
+        buildables_account.buildables = buildables;
+        Ok(())
+    }
+    
+    // An admin should be able to destroy the building on a location
+    pub fn destroy_feature(ctx:Context<DestroyFeature>) -> ProgramResult {
+        let location = &mut ctx.accounts.location;
+        location.feature = None;
+        Ok(())
+    }
 
     // An admin should be able to upload a new type of buildable
     pub fn init_buildable(ctx:Context<InitBuildable>, buildables: Vec<Feature>) -> ProgramResult {
@@ -272,9 +290,6 @@ pub mod dominari {
         buildables_account.buildables = buildables;
         Ok(())
     }
-
-    // An admin should be able to add new buildables to the Game
-    //TODO
 
     // A player can play a card onto an initalized Location
     pub fn play_card(ctx:Context<PlayCard>, card_idx: u16) -> ProgramResult {
@@ -655,7 +670,7 @@ pub mod dominari {
                 range_per_rank
             } => {
                 let mut destination: Account<Location> = Account::try_from(&ctx.remaining_accounts[0])?;
-                let effective_range = range_per_rank * feature.rank as u64;
+                let effective_range = range_per_rank * feature.rank as u64; //adding 1 because base rank is 0
                 let distance:f64 = (((destination.coords.x - location.coords.x).pow(2) + (destination.coords.y - location.coords.y).pow(2)) as f64).sqrt();
                 
                 //Destination is out of range
@@ -687,7 +702,7 @@ pub mod dominari {
                 ..
             } => {
                 let drop_table: Account<DropTable> = Account::try_from(&ctx.remaining_accounts[0])?;
-                if drop_table.id != drop_table_ladder[feature.rank as usize] {
+                if drop_table.id != drop_table_ladder[(feature.rank-1) as usize] { //rank starts at 1, drop_table_ladder starts at 0
                     return Err(CustomError::InvalidDropTable.into())
                 }
 
@@ -706,7 +721,7 @@ pub mod dominari {
         }
 
         //Pay the fee
-        let fee = feature.cost_for_use_ladder[feature.rank as usize];
+        let fee = feature.cost_for_use_ladder[(feature.rank - 1) as usize]; //ladder is an array and starts at 0, rank starts at 1
         let ix = transfer(
             &player.key(),
             &location.key(),

@@ -15,7 +15,6 @@ pub enum FeatureType {
     }, 
     LootableFeature {
         drop_table_ladder: Vec<u64>, //IDs for the drop tables for this lootable feature
-        drop_table_ladder_names: Vec<String> //"Camp, Town, City" etc
     },
     Healer {
         power_healed_per_rank: u64
@@ -24,12 +23,14 @@ pub enum FeatureType {
 
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, Debug, PartialEq)]
 pub struct Feature{
+    pub name: String,
     pub id: u16,
     pub max_rank: u8,
     pub rank: u8,
     pub rank_upgrade_cost_multiplier: u64,
     pub cost_for_use_ladder: Vec<u64>,
     pub link_rank_ladder: Vec<String>, //"small_healer.png", "medium_healer.png", etc
+    pub name_rank_ladder: Vec<String>, //"small_healer", "medium_healer", etc
     pub properties: FeatureType,
     pub last_used: u64, //Slot it was last used in
     pub recovery: u64 //Slots it takes to recover from being used

@@ -61,7 +61,9 @@ export interface Feature {
     rankUpgradeCostMulitiplier: number | BN,
     costForUseLadder: number[] | BN[],
     linkRankLadder: string[],
-    properties: FeatureType
+    properties: FeatureType,
+    lastUsed: number | BN,
+    recovery: number | BN
 }
 
 export interface FeatureType {

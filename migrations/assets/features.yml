@@ -1,0 +1,41 @@
+name: Portal
+id: 1
+maxRank: 3
+rank: 1
+rankUpgradeCostMultiplier: 1000
+costForUseLadder: [1000, 2000, 3000]
+linkRankLadder: ["portal.png", "portal.png", "portal.png"]
+nameRankLadder: ["Portal I", "Portal II", "Portal III"]
+lastUsed: 0
+recovery: 120
+properties:
+  Portal:
+    rangePerRank: 10
+---
+name: Campfire
+id: 2
+maxRank: 3
+rank: 1
+rankUpradeCostMultiplier: 1000
+costForUseLadder: [1000, 2000, 3000]
+linkRankLadder: ["campfire.png", "campfire.png", "campfire.png"]
+nameRankLadder: ["Campfire", "Campfire II", "Campfire III"]
+lastUsed: 0
+recovery: 120
+properties:
+  Healer:
+    powerHealedPerRank: 2
+---
+name: Village
+id: 3
+maxRank: 3
+rank: 1
+rankUpgradeCostMultiplier: 1000
+costForUseLadder: [1000, 2000, 3000]
+linkRankLadder: ["village.png", "town.png", "city.png"]
+nameRankLadder: ["Village", "Town", "City"]
+lastUsed: 0
+recovery: 480
+properties:
+  LootableFeature:
+    dropTableLadder: [1,2,3]

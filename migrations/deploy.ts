@@ -1,7 +1,7 @@
 import {Dominari} from '../js/dist/dominari';
 import {bs58} from '@project-serum/anchor/dist/cjs/utils/bytes';
 import fs from 'fs';
-
+import yml from 'js-yaml';
 import * as anchor from '@project-serum/anchor';
 
 
@@ -13,7 +13,10 @@ async function main(){
     const di = new Dominari(CONN_STRING, CONTRACT_ADDRESS, APOLLO_KEYPAIR, IDL);
     
     // Init Game
+    //await di.initGame(0,0);
         // Init Drop Tables
+    let droptables = yml.loadAll(fs.readFileSync('migrations/droptables.yaml').toString());
+    console.log(droptables);
         // Init Buildables
     //Initalize a bunch of spaces
     //Build features on a couple spaces

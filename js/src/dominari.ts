@@ -185,7 +185,8 @@ export class Dominari {
     }
 
     /**
-     * Can only be called by the admin. Bypasses NFT check.
+     * ADMIN METHOD
+     * Bypasses NFT check for building on a location
      * @param coord The coordinates of the location you want to build on.
      * @param buildable_idx The index in buildables[] that you want to build on that location
      * @returns The location account that's been modified which should now represent the new building
@@ -309,16 +310,12 @@ export class Dominari {
 
     /**
      * Initializes a drop table with a given ID
-     * @param id 
-     * @param cards 
-     * @returns 
+     * @param id The id for the drop table
+     * @param cards The list of cards for the drop table.
+     * @returns The newly created drop table account
      */
-    public async initDropTable(id: number, cards:TYPES.Card[]){
+    public async initDroptable(id: number, cards:TYPES.Card[]){
         try {
-            if(!this.gameNX || !this.gameNY){
-                throw new Error("Please initalize a game first!");
-            }
-
             if(!this.ADMIN_KEY.equals(this._PROVIDER.wallet.publicKey)){
                 throw new Error("Only the admin can call this function!");
             }
@@ -343,7 +340,6 @@ export class Dominari {
             ],this._PROGRAM.programId)
             
             await this._PROGRAM.methods
-                //@ts-ignore
                 .initDropTable(new anchor.BN(id), cards)
                 .accounts({
                     authority: this._PROVIDER.wallet.publicKey,
@@ -366,6 +362,10 @@ export class Dominari {
      */
     public async initBuildable(features: TYPES.Feature[]){
         try{
+            if(!this.ADMIN_KEY.equals(this._PROVIDER.wallet.publicKey)){
+                throw new Error("Only the admin can call this function!");
+            }
+
             features = features.map(feature => {
                 feature.rankUpgradeCostMulitiplier = new anchor.BN(feature.rankUpgradeCostMulitiplier)
                 feature.costForUseLadder = feature.costForUseLadder.map(cost => {
@@ -790,6 +790,117 @@ export class Dominari {
             .rpc();
 
         return await this._PROGRAM.account.location.fetch(source_acc);
+    }
+
+    /**
+     * ADMIN METHOD
+     * @param source 
+     * @returns 
+     */
+    public async destroyFeature(source:TYPES.Coords){
+        try{
+            const [source_acc, source_bmp] = findProgramAddressSync([
+                byteify.serializeInt64(source.nx),
+                byteify.serializeInt64(source.ny),
+                byteify.serializeInt64(source.x),
+                byteify.serializeInt64(source.y)
+            ], this._PROGRAM.programId);
+
+            await this._PROGRAM.methods
+                .destroyFeature()
+                .accounts({
+                    location: source_acc,
+                    authority: this._PROVIDER.wallet.publicKey
+                })
+                .rpc();
+            
+            return await this._PROGRAM.account.location.fetch(source_acc);
+        } catch (e) {
+            throw e;
+        }
+    }
+
+    /**
+     * ADMIN METHOD
+     * Overwrites the Buildables array with the given features
+     * @param features List of features to set the new buildables array
+     * @returns The new buildables array
+     */
+    public async setBuildables(features: TYPES.Feature[]){
+        try{
+            if(!this.ADMIN_KEY.equals(this._PROVIDER.wallet.publicKey)){
+                throw new Error("Only the admin can call this function!");
+            }
+
+            features = features.map(feature => {
+                feature.rankUpgradeCostMulitiplier = new anchor.BN(feature.rankUpgradeCostMulitiplier)
+                feature.costForUseLadder = feature.costForUseLadder.map(cost => {
+                    return new anchor.BN(cost)
+                });
+                if(feature.properties.Healer){
+                    feature.properties.Healer.powerHealedPerRank = new anchor.BN(feature.properties.Healer.powerHealedPerRank);
+                } else if (feature.properties.LootableFeature) {
+                    feature.properties.LootableFeature.dropTableLadder = feature.properties.LootableFeature.dropTableLadder.map(dropTable => {
+                        return new anchor.BN(dropTable);
+                    });
+                } else if (feature.properties.Portal){
+                    feature.properties.Portal.rangePerRank = new anchor.BN(feature.properties.Portal.rangePerRank);
+                }
+                return feature;
+            })
+
+            await this._PROGRAM.methods
+                .setBuildable(features)
+                .accounts({
+                    authority: this._PROVIDER.wallet.publicKey,
+                    buildables: this.BUILDABLES_PK
+                })
+                .rpc();
+
+            return await this._PROGRAM.account.buildables.fetch(this.BUILDABLES_PK);
+        } catch (e) {
+            throw e;
+        }
+    }
+
+
+    public async setDroptable(id: number, cards: TYPES.Card[]){
+        try{
+            if(!this.ADMIN_KEY.equals(this._PROVIDER.wallet.publicKey)){
+                throw new Error("Only the admin can call this function!");
+            }
+
+            //Only recovery is of type i64 which is greater than the number field in JS so it needs to be converted to big number
+            // Rest should be fine as regular numbers as they are only i8s
+            // droptableid and id are u64 which is also a problem
+            cards = cards.map(card => {
+                card.dropTableId = new anchor.BN(card.dropTableId);
+                card.id = new anchor.BN(id);
+
+                if(card.data.MOD) {
+                    card.data.MOD.stats.recovery = new anchor.BN(card.data.MOD.stats.recovery)
+                } else if (card.data.UNIT) {
+                    card.data.UNIT.stats.recovery = new anchor.BN(card.data.UNIT.stats.recovery)
+                }
+                return card;
+            });
+
+            const [dropTableAcc, dropTableBmp] = findProgramAddressSync([
+                byteify.serializeUint64(id)
+            ],this._PROGRAM.programId)
+            
+            await this._PROGRAM.methods
+                .setDropTable(cards)
+                .accounts({
+                    authority: this._PROVIDER.wallet.publicKey,
+                    dropTableAcc: dropTableAcc
+                })
+                .rpc();
+            
+            return await this._PROGRAM.account.dropTable.fetch(dropTableAcc);
+        } catch (e) {
+            throw e;
+        }
     }
 
     /**

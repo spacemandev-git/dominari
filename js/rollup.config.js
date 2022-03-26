@@ -50,12 +50,13 @@ const config = [
     ],
     output: {
       file: "dist/dominari.js",
-      format: "es",
+      format: "umd",
+      name: "di",
       sourcemap: false,
     },
   }, {
     input: "dist/dist/src/index.d.ts",
-    output: [{ file: "dist/dominari.d.ts", format: "es" }],
+    output: [{ file: "dist/dominari.d.ts", format: "umd" }],
     plugins: [dts()]
   } 
 ];
