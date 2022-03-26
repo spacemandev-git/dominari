@@ -1,4 +1,4 @@
-import {Dominari} from '../js/src/dominari';
+import {Dominari} from '../js/dist/dominari';
 import {bs58} from '@project-serum/anchor/dist/cjs/utils/bytes';
 import fs from 'fs';
 
@@ -11,7 +11,7 @@ async function main(){
     const CONTRACT_ADDRESS = "BGYHifTqRGUnJMfugZn5sbAZqjMR6bPZ98NmLcDeb7N7";
     const IDL = JSON.parse(fs.readFileSync('target/idl/dominari.json').toString());
     const di = new Dominari(CONN_STRING, CONTRACT_ADDRESS, APOLLO_KEYPAIR, IDL);
-
+    
     // Init Game
         // Init Drop Tables
         // Init Buildables

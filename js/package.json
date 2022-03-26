@@ -3,22 +3,23 @@
         "build": "rollup -c"
     },
     "dependencies": {
-        "@types/node": "^17.0.21",
         "@metaplex/js": "^4.12.0",
         "@nfteyez/sol-rayz": "^0.10.2",
         "@project-serum/anchor": "^0.21.0",
-        "@types/chai": "^4.3.0",
-        "byteify": "^2.0.10",
-        "rxjs": "^7.5.5",
         "@rollup/plugin-commonjs": "^21.0.1",
         "@rollup/plugin-json": "^4.1.0",
         "@rollup/plugin-node-resolve": "^13.1.3",
         "@rollup/plugin-replace": "^3.0.1",
         "@rollup/plugin-typescript": "^8.3.0",
+        "@types/chai": "^4.3.0",
+        "@types/node": "^17.0.21",
+        "byteify": "^2.0.10",
         "rollup": "^2.63.0",
+        "rollup-plugin-dts": "^4.2.0",
         "rollup-plugin-node-builtins": "^2.1.2",
         "rollup-plugin-node-globals": "^1.4.0",
-        "rollup-plugin-terser": "^7.0.2"
+        "rollup-plugin-terser": "^7.0.2",
+        "rxjs": "^7.5.5"
     },
     "devDependencies": {
         "@types/mocha": "^9.0.0",
@@ -27,10 +28,9 @@
         "ts-mocha": "^8.0.0",
         "typescript": "^4.3.5"
     },
-    "main": "dist/legacy.cjs.js",
-    "module": "dist/legacy.esm.js",
-    "browser": "dist/legacy.umd.js",
+    "module": "./dist/dominari.js",
+    "types": "./dist/types/index.d.ts",
     "files": [
-      "dist"
+        "dist"
     ]
 }

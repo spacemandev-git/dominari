@@ -1,7 +1,7 @@
 import * as anchor from '@project-serum/anchor';
 import { Program } from '@project-serum/anchor';
 import { findProgramAddressSync } from '@project-serum/anchor/dist/cjs/utils/pubkey';
-import { Dominari as ditypes}  from './idl/dominari';
+import { Dominari as ditypes}  from './types/dominari';
 import NodeWallet from '@project-serum/anchor/dist/cjs/nodewallet';
 import * as byteify from 'byteify';
 import * as nft from '@nfteyez/sol-rayz';

@@ -58,7 +58,10 @@ pub struct Build<'info>{
 pub struct DebugBuild<'info> {
     #[account(mut)]
     pub location: Account<'info, Location>,
-    #[account(mut)]
+    #[account(
+        mut,
+        constraint = builder.key() == Pubkey::from_str(ADMIN_KEY).unwrap()
+    )]
     pub builder: Signer<'info>,
     pub system_program: Program<'info, System>,
     #[account(seeds=[b"buildables"], bump)]

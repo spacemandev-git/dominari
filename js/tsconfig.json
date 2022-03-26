@@ -5,7 +5,8 @@
   "compilerOptions": {
     "sourceMap": true,
     "declaration": true,
-    "declarationMap": true,
+    "declarationDir": "dist/",
+    "declarationMap": false,
     "allowSyntheticDefaultImports": true,
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
@@ -16,7 +17,6 @@
     "composite": true,
     "baseUrl": ".",
     "typeRoots": [
-      "types/",
       "node_modules/@types"
     ],
     "paths": {
