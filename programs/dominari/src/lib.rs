@@ -230,9 +230,9 @@ pub mod dominari {
                 description: String::from("A basic Scout unit"),
                 link: String::from("Scout.png")
             },
-            data: CardData::UNIT {
+            data: CardData::unit {
                 stats: StatInfo {
-                    class: Some(TroopClass::Infantry),
+                    class: Some(TroopClass::infantry),
                     range: 1,
                     power: 6,
                     max_power: 6,
@@ -301,10 +301,10 @@ pub mod dominari {
         let clock = Clock::get().unwrap();
 
         match card.data {
-            CardData::ACTION => {
+            CardData::action => {
                 //TODO
             },
-            CardData::MOD {stats} => {
+            CardData::unitmod {stats} => {
                 //Manual math is needed to ensure no values go into the invalid ranges (the top three values are unsigned, but the mod is signed)
 
                 if location.troops == None || location.troops.as_ref().unwrap().gamekey != game.key() {
@@ -355,7 +355,7 @@ pub mod dominari {
                 modified_troops.data.mod_air = modified_troops.data.mod_air.saturating_add(stats.mod_air);
                 location.troops = Some(modified_troops);
             },
-            CardData::UNIT {stats} => {
+            CardData::unit {stats} => {
                 //If location is NOT EMPTY && the troops BELONG TO THIS GAME it's an invalid location
                 // If it's NOT EMPTY but the troops belong to a different game, it doesn't really matter
                 if location.troops != None && location.troops.as_ref().unwrap().gamekey == game.key() {
@@ -650,7 +650,7 @@ pub mod dominari {
 
         //Activate the feature
         match feature.properties {
-            FeatureType::Healer { power_healed_per_rank } => {
+            FeatureType::healer { power_healed_per_rank } => {
                 let heal_bonus = power_healed_per_rank * feature.rank as u64;
                 let mut modified_troops = location.troops.as_ref().unwrap().clone();
                 modified_troops.data.power += heal_bonus as i8;
@@ -666,7 +666,7 @@ pub mod dominari {
                     player: player_acc.key()
                 })
             },
-            FeatureType::Portal {
+            FeatureType::portal {
                 range_per_rank
             } => {
                 let mut destination: Account<Location> = Account::try_from(&ctx.remaining_accounts[0])?;
@@ -697,7 +697,7 @@ pub mod dominari {
                     player: player_acc.key()
                 })
             },
-            FeatureType::LootableFeature {
+            FeatureType::lootablefeature {
                 ref drop_table_ladder,
                 ..
             } => {
@@ -759,11 +759,11 @@ pub mod dominari {
 pub fn get_atk(attacking: &Troop, defending: &Troop, idx:usize) -> u8{
     //returns a random number between 0 to power
     let mut attacking_power = (get_random_u8(idx) / (u8::MAX/(attacking.data.power as u8))) as i16;
-    if defending.data.class == Some(TroopClass::Infantry) {
+    if defending.data.class == Some(TroopClass::infantry) {
         attacking_power += attacking.data.mod_inf as i16;
-    } else if defending.data.class == Some(TroopClass::Armor) {
+    } else if defending.data.class == Some(TroopClass::armor) {
         attacking_power += attacking.data.mod_armor as i16;
-    } else if defending.data.class == Some(TroopClass::Aircraft) {
+    } else if defending.data.class == Some(TroopClass::aircraft) {
         attacking_power += attacking.data.mod_air as i16;
     } 
 

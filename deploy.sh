@@ -1,8 +1,10 @@
+#!/bin/bash
+
 # Start up Solana Test validator locally
-rm -rf dominari-ledger
-nohup solana-test-validator --ledger dominari-ledger >/dev/null &
+nohup solana-test-validator --reset --ledger dominari-ledger >/dev/null &
 STLPID=$!
 echo $STLPID
+sleep 5
 # Set Solana to localnet
 solana config set -u localhost
 # Deploy the program

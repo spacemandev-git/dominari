@@ -327,14 +327,16 @@ export class Dominari {
                 card.dropTableId = new anchor.BN(card.dropTableId);
                 card.id = new anchor.BN(id);
 
-                if(card.data.MOD) {
-                    card.data.MOD.stats.recovery = new anchor.BN(card.data.MOD.stats.recovery)
-                } else if (card.data.UNIT) {
-                    card.data.UNIT.stats.recovery = new anchor.BN(card.data.UNIT.stats.recovery)
+                if(card.data.unitmod) {
+                    card.data.unitmod.stats.recovery = new anchor.BN(card.data.unitmod.stats.recovery)
+                } else if (card.data.unit) {
+                    card.data.unit.stats.recovery = new anchor.BN(card.data.unit.stats.recovery)
                 }
                 return card;
             });
 
+            console.debug(JSON.stringify(cards, null, 2));
+            
             const [dropTableAcc, dropTableBmp] = findProgramAddressSync([
                 byteify.serializeUint64(id)
             ],this._PROGRAM.programId)
@@ -371,14 +373,14 @@ export class Dominari {
                 feature.costForUseLadder = feature.costForUseLadder.map(cost => {
                     return new anchor.BN(cost)
                 });
-                if(feature.properties.Healer){
-                    feature.properties.Healer.powerHealedPerRank = new anchor.BN(feature.properties.Healer.powerHealedPerRank);
-                } else if (feature.properties.LootableFeature) {
-                    feature.properties.LootableFeature.dropTableLadder = feature.properties.LootableFeature.dropTableLadder.map(dropTable => {
+                if(feature.properties.healer){
+                    feature.properties.healer.powerHealedPerRank = new anchor.BN(feature.properties.healer.powerHealedPerRank);
+                } else if (feature.properties.lootablefeature) {
+                    feature.properties.lootablefeature.dropTableLadder = feature.properties.lootablefeature.dropTableLadder.map(dropTable => {
                         return new anchor.BN(dropTable);
                     });
-                } else if (feature.properties.Portal){
-                    feature.properties.Portal.rangePerRank = new anchor.BN(feature.properties.Portal.rangePerRank);
+                } else if (feature.properties.portal){
+                    feature.properties.portal.rangePerRank = new anchor.BN(feature.properties.portal.rangePerRank);
                 }
                 return feature;
             })
@@ -837,14 +839,14 @@ export class Dominari {
                 feature.costForUseLadder = feature.costForUseLadder.map(cost => {
                     return new anchor.BN(cost)
                 });
-                if(feature.properties.Healer){
-                    feature.properties.Healer.powerHealedPerRank = new anchor.BN(feature.properties.Healer.powerHealedPerRank);
-                } else if (feature.properties.LootableFeature) {
-                    feature.properties.LootableFeature.dropTableLadder = feature.properties.LootableFeature.dropTableLadder.map(dropTable => {
+                if(feature.properties.healer){
+                    feature.properties.healer.powerHealedPerRank = new anchor.BN(feature.properties.healer.powerHealedPerRank);
+                } else if (feature.properties.lootablefeature) {
+                    feature.properties.lootablefeature.dropTableLadder = feature.properties.lootablefeature.dropTableLadder.map(dropTable => {
                         return new anchor.BN(dropTable);
                     });
-                } else if (feature.properties.Portal){
-                    feature.properties.Portal.rangePerRank = new anchor.BN(feature.properties.Portal.rangePerRank);
+                } else if (feature.properties.portal){
+                    feature.properties.portal.rangePerRank = new anchor.BN(feature.properties.portal.rangePerRank);
                 }
                 return feature;
             })
@@ -877,10 +879,10 @@ export class Dominari {
                 card.dropTableId = new anchor.BN(card.dropTableId);
                 card.id = new anchor.BN(id);
 
-                if(card.data.MOD) {
-                    card.data.MOD.stats.recovery = new anchor.BN(card.data.MOD.stats.recovery)
-                } else if (card.data.UNIT) {
-                    card.data.UNIT.stats.recovery = new anchor.BN(card.data.UNIT.stats.recovery)
+                if(card.data.unitmod) {
+                    card.data.unitmod.stats.recovery = new anchor.BN(card.data.unitmod.stats.recovery)
+                } else if (card.data.unit) {
+                    card.data.unit.stats.recovery = new anchor.BN(card.data.unit.stats.recovery)
                 }
                 return card;
             });

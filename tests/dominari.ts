@@ -94,13 +94,15 @@ describe('dominari', () => {
     */
   })
   
+  /*
   it('DEBUG', async () => {
     await dominari.methods
     .debug()
     .accounts()
     .signers()
     .rpc()
-
+  })
+    */
     /**
     .remainingAccounts([
       {
@@ -112,7 +114,6 @@ describe('dominari', () => {
 
      */
 
-  })
 })
 
 async function getSpaceNFTs(owner: anchor.web3.PublicKey, connection: anchor.web3.Connection){

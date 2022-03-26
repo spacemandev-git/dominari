@@ -14,6 +14,8 @@ export async function init(nx:number, ny:number){
 
     // Init Game
     await game.initGame(nx,ny);
+    console.log(`Initialized Game in Neighborhood (${nx},${ny})`)
+
 
     // Init Drop Tables
     let droptables = yml.loadAll(fs.readFileSync('migrations/assets/droptables.yml').toString());
@@ -25,12 +27,14 @@ export async function init(nx:number, ny:number){
     droptable_accs.forEach((acc, idx) => {
         fs.writeFileSync(`migrations/logs/${idx}_droptable.json`, JSON.stringify(acc, null,2));
     })
-    
+    console.log(`Initialized ${droptables.length} Droptables.`);
+
     // Init Buildables
     let features = yml.loadAll(fs.readFileSync('migrations/assets/features.yml').toString());
     const buildable_acc = await game.initBuildable(features as Feature[]);
     fs.writeFileSync(`migrations/logs/buildables.json`, JSON.stringify(buildable_acc, null, 2));
-    
+    console.log(`Initialized ${features.length} Features.`);
+
     return game;
 }
 

@@ -28,9 +28,9 @@ export interface MetaInformation {
 }
 
 export interface CardData{
-    ACTION?: any,
-    MOD?: StatInfoHolder
-    UNIT?: StatInfoHolder
+    action?: any,
+    unitmod?: StatInfoHolder
+    unit?: StatInfoHolder
 }
 
 interface StatInfoHolder {
@@ -49,9 +49,9 @@ export interface StatInfo {
 }
 
 export interface TroopClass {
-    Infantry?: {},
-    Armor?: {},
-    Aircraft?: {}
+    infantry?: {},
+    armor?: {},
+    aircraft?: {}
 }
 
 export interface Feature {
@@ -67,9 +67,9 @@ export interface Feature {
 }
 
 export interface FeatureType {
-    Portal?: FT_Portal,
-    LootableFeature?: FT_LootableFeature,
-    Healer?: FT_Healer
+    portal?: FT_Portal,
+    lootablefeature?: FT_LootableFeature,
+    healer?: FT_Healer
 }
 
 export interface FT_Portal{

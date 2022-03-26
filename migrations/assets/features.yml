@@ -9,7 +9,7 @@ nameRankLadder: ["Portal I", "Portal II", "Portal III"]
 lastUsed: 0
 recovery: 120
 properties:
-  Portal:
+  portal:
     rangePerRank: 10
 ---
 name: Campfire
@@ -23,7 +23,7 @@ nameRankLadder: ["Campfire", "Campfire II", "Campfire III"]
 lastUsed: 0
 recovery: 120
 properties:
-  Healer:
+  healer:
     powerHealedPerRank: 2
 ---
 name: Village
@@ -37,5 +37,5 @@ nameRankLadder: ["Village", "Town", "City"]
 lastUsed: 0
 recovery: 480
 properties:
-  LootableFeature:
+  lootablefeature:
     dropTableLadder: [1,2,3]

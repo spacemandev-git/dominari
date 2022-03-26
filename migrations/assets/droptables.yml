@@ -2,19 +2,21 @@
   dropTableId: 1
   id: 1
   meta:
-    name: Scout Infantry
+    name: Scout infantry
     description: A simple scout unit. 
     link: scout.png
   data: 
-    UNIT:
-      class: Infantry
-      range: 1
-      power: 6
-      maxPower: 6
-      modInf: 0
-      modArmor: 0
-      modAir: 0
-      recovery: 30
+    unit:
+      stats:
+        class:
+          infantry: {}
+        range: 1
+        power: 6
+        maxPower: 6
+        modInf: 0
+        modArmor: 0
+        modAir: 0
+        recovery: 30
 - 
   dropTableId: 1
   id: 2
@@ -23,33 +25,37 @@
     description: A standard drone unit
     link: drone.png
   data: 
-    UNIT:
-      class: Infantry
-      range: 2
-      power: 2
-      maxPower: 2
-      modInf: 0
-      modArmor: 0
-      modAir: 0
-      recovery: 20
+    unit:
+      stats:
+        class: 
+          aircraft: {}
+        range: 2
+        power: 2
+        maxPower: 2
+        modInf: 0
+        modArmor: 0
+        modAir: 0
+        recovery: 20
 ---
 - 
   dropTableId: 1
   id: 1
   meta:
-    name: Scout Infantry
+    name: Scout infantry
     description: A simple scout unit. 
     link: scout.png
   data: 
-    UNIT:
-      class: Infantry
-      range: 1
-      power: 6
-      maxPower: 6
-      modInf: 0
-      modArmor: 0
-      modAir: 0
-      recovery: 30
+    unit:
+      stats:
+        class:
+          infantry: {}
+        range: 1
+        power: 6
+        maxPower: 6
+        modInf: 0
+        modArmor: 0
+        modAir: 0
+        recovery: 30
 - 
   dropTableId: 1
   id: 2
@@ -58,33 +64,37 @@
     description: A standard drone unit
     link: drone.png
   data: 
-    UNIT:
-      class: Infantry
-      range: 2
-      power: 2
-      maxPower: 2
-      modInf: 0
-      modArmor: 0
-      modAir: 0
-      recovery: 20
+    unit:
+      stats:
+        class: 
+          aircraft: {}
+        range: 2
+        power: 2
+        maxPower: 2
+        modInf: 0
+        modArmor: 0
+        modAir: 0
+        recovery: 20
 ---
 - 
   dropTableId: 1
   id: 1
   meta:
-    name: Scout Infantry
+    name: Scout infantry
     description: A simple scout unit. 
     link: scout.png
   data: 
-    UNIT:
-      class: Infantry
-      range: 1
-      power: 6
-      maxPower: 6
-      modInf: 0
-      modArmor: 0
-      modAir: 0
-      recovery: 30
+    unit:
+      stats:
+        class:
+          infantry: {}
+        range: 1
+        power: 6
+        maxPower: 6
+        modInf: 0
+        modArmor: 0
+        modAir: 0
+        recovery: 30
 - 
   dropTableId: 1
   id: 2
@@ -93,12 +103,14 @@
     description: A standard drone unit
     link: drone.png
   data: 
-    UNIT:
-      class: Infantry
-      range: 2
-      power: 2
-      maxPower: 2
-      modInf: 0
-      modArmor: 0
-      modAir: 0
-      recovery: 20
+    unit:
+      stats:
+        class: 
+          aircraft: {}
+        range: 2
+        power: 2
+        maxPower: 2
+        modInf: 0
+        modArmor: 0
+        modAir: 0
+        recovery: 20
