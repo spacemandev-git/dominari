@@ -6,8 +6,9 @@ target
 node_modules
 
 migrations/assets/apollo.txt
+migrations/assets/apollo2.txt
 js/dist
 js/.rollup.cache
 
 dominari-ledger
-nohup.out
+migrations/logs

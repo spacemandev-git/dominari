@@ -39,6 +39,7 @@ export class Dominari {
     private SPACE_PROGRAM_ID = new anchor.web3.PublicKey('XSPCZghPXkWTWpvrfQ34Szpx3rwmUjsxebRFf5ckbMD');
     private EXTEND_BASE_PK = new anchor.web3.PublicKey('XBSEZzB7ojaKgXqfCSpNbPLnuMGk3JVtSKYjXYqg7Pn');
     private BUILDABLES_PK: anchor.web3.PublicKey;
+    private gameID: string;
     private gameNX: number;
     private gameNY: number;
 
@@ -59,7 +60,8 @@ export class Dominari {
         _KEYPAIR: anchor.web3.Keypair,
         _IDL: any,
         _nx?:number,
-        _ny?:number
+        _ny?:number,
+        _gameID?:string
     ) {
         this._CONNECTION = new anchor.web3.Connection(_connString, "finalized");
         this._IDL = _IDL;
@@ -67,9 +69,10 @@ export class Dominari {
         this._PROGRAM = new anchor.Program<ditypes>(this._IDL, _CONTRACT_ADDRESS, this._PROVIDER);
         let [buildables_address, buildables_bmp] = findProgramAddressSync([Buffer.from("buildables")],this._PROGRAM.programId);
         this.BUILDABLES_PK = buildables_address;
-        if(_nx && _ny){
+        if(_nx && _ny && _gameID){
             this.gameNX = _nx,
             this.gameNY = _ny
+            this.gameID = _gameID
         }
 
         this.setupEventListeners();
@@ -143,11 +146,11 @@ export class Dominari {
     }
 
     /**
-     * Returns the list of deserialized location accounts
+     * Returns the list of deserialized location accounts by Coordinate pair
      * @param x The X coordinate of the space
      * @param y The Y coordinate of the space
      */
-    public async getLocations(coords:TYPES.Coords[]){
+    public async getLocationsByCoords(coords:TYPES.Coords[]){
         let addresses:anchor.web3.PublicKey[] = [];
         for(let coord of coords){
             const [loc_address, loc_bump] = findProgramAddressSync([
@@ -163,6 +166,15 @@ export class Dominari {
         } catch (e) {
             throw e;
         }
+    }
+
+    /**
+     * Returns the list of deserialized location accounts by Address
+     * @param addresses A list of Public keys of the location accounts as strings
+     * @returns The array of location accoutns requested
+     */
+    public async getLocationsByAddress(addresses: String[]){
+        return await this._PROGRAM.account.location.fetchMultiple(addresses.map(address => new anchor.web3.PublicKey(address)));
     }
 
     /**
@@ -226,8 +238,8 @@ export class Dominari {
             byteify.serializeInt64(coord.y)
         ],this._PROGRAM.programId);
 
-        const tx_receipt = await this._PROGRAM.methods
-            .buildLocation(new anchor.BN(buildable_idx))
+        await this._PROGRAM.methods
+            .debugBuildLocation(new anchor.BN(buildable_idx))
             .accounts({
                 location: loc_address,
                 builder: this._PROVIDER.wallet.publicKey,
@@ -280,19 +292,18 @@ export class Dominari {
     /**
      * ADMIN ONLY
      * Toggles the enabled state of the game allowing or disallowing moves.
-     * @param nx 
-     * @param ny 
-     * @returns 
+     * @returns The game account that was just toggled off
      */
-    public async toggleGame(nx:number, ny:number){
+    public async toggleGame(){
         try{
             if(!this.ADMIN_KEY.equals(this._PROVIDER.wallet.publicKey)){
                 throw new Error("Only the admin can call this function!");
             }
 
             const [game_acc, game_bmp] = findProgramAddressSync([
-                byteify.serializeInt64(nx),
-                byteify.serializeInt64(ny)
+                Buffer.from(this.gameID),
+                byteify.serializeInt64(this.gameNX),
+                byteify.serializeInt64(this.gameNY)
             ], this._PROGRAM.programId);
 
             await this._PROGRAM.methods
@@ -316,11 +327,12 @@ export class Dominari {
      */
     public async registerPlayer(playerName:string){
         try {
-            if(!this.gameNX || !this.gameNY){
+            if(!this.gameNX || !this.gameNY || !this.gameID){
                 throw new Error("Please initalize a game first!");
             }
 
             const [game_acc, game_bmp] = findProgramAddressSync([
+                Buffer.from(this.gameID),
                 byteify.serializeInt64(this.gameNX),
                 byteify.serializeInt64(this.gameNY)
             ], this._PROGRAM.programId);
@@ -351,11 +363,12 @@ export class Dominari {
      * @param playerPK The player public key
      */
     public async getPlayerFromPublicKey(playerPK: string){
-        if(!this.gameNX || !this.gameNY){
+        if(!this.gameNX || !this.gameNY || !this.gameID){
             throw new Error("Please initalize a game first!");
         }
 
         const [game_acc, game_bmp] = findProgramAddressSync([
+            Buffer.from(this.gameID),
             byteify.serializeInt64(this.gameNX),
             byteify.serializeInt64(this.gameNY)
         ], this._PROGRAM.programId);
@@ -485,11 +498,12 @@ export class Dominari {
      */
     public async playCard(coord:TYPES.Coords, card_idx:number){
         try {
-            if(!this.gameNX || !this.gameNY){
+            if(!this.gameNX || !this.gameNY || !this.gameID){
                 throw new Error("Please initalize a game first!");
             }
     
             const [game_acc, game_bmp] = findProgramAddressSync([
+                Buffer.from(this.gameID),
                 byteify.serializeInt64(this.gameNX),
                 byteify.serializeInt64(this.gameNY)
             ], this._PROGRAM.programId);
@@ -530,11 +544,12 @@ export class Dominari {
      */
     public async move(source: TYPES.Coords, destination: TYPES.Coords){
         try {
-            if(!this.gameNX || !this.gameNY){
+            if(!this.gameNX || !this.gameNY || !this.gameID){
                 throw new Error("Please initalize a game first!");
             }
     
             const [game_acc, game_bmp] = findProgramAddressSync([
+                Buffer.from(this.gameID),
                 byteify.serializeInt64(this.gameNX),
                 byteify.serializeInt64(this.gameNY)
             ], this._PROGRAM.programId);
@@ -583,11 +598,12 @@ export class Dominari {
      */    
     public async attack(source: TYPES.Coords, destination: TYPES.Coords){
         try {
-            if(!this.gameNX || !this.gameNY){
+            if(!this.gameNX || !this.gameNY || !this.gameID){
                 throw new Error("Please initalize a game first!");
             }
     
             const [game_acc, game_bmp] = findProgramAddressSync([
+                Buffer.from(this.gameID),
                 byteify.serializeInt64(this.gameNX),
                 byteify.serializeInt64(this.gameNY)
             ], this._PROGRAM.programId);
@@ -713,11 +729,12 @@ export class Dominari {
      */
     public async activatePortal(source:TYPES.Coords, destination:TYPES.Coords){
         try{
-            if(!this.gameNX || !this.gameNY){
+            if(!this.gameNX || !this.gameNY || !this.gameID){
                 throw new Error("Please initalize a game first!");
             }
     
             const [game_acc, game_bmp] = findProgramAddressSync([
+                Buffer.from(this.gameID),
                 byteify.serializeInt64(this.gameNX),
                 byteify.serializeInt64(this.gameNY)
             ], this._PROGRAM.programId);
@@ -771,11 +788,12 @@ export class Dominari {
      * @returns 
      */
     public async activateLootableFeature(source:TYPES.Coords){
-        if(!this.gameNX || !this.gameNY){
+        if(!this.gameNX || !this.gameNY || !this.gameID){
             throw new Error("Please initalize a game first!");
         }
 
         const [game_acc, game_bmp] = findProgramAddressSync([
+            Buffer.from(this.gameID),
             byteify.serializeInt64(this.gameNX),
             byteify.serializeInt64(this.gameNY)
         ], this._PROGRAM.programId);
@@ -827,11 +845,12 @@ export class Dominari {
      * @param source 
      */
     public async activateHealer(source:TYPES.Coords){
-        if(!this.gameNX || !this.gameNY){
+        if(!this.gameNX || !this.gameNY || !this.gameID){
             throw new Error("Please initalize a game first!");
         }
 
         const [game_acc, game_bmp] = findProgramAddressSync([
+            Buffer.from(this.gameID),
             byteify.serializeInt64(this.gameNX),
             byteify.serializeInt64(this.gameNY)
         ], this._PROGRAM.programId);
