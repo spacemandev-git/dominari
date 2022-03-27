@@ -8,6 +8,12 @@ import * as nft from '@nfteyez/sol-rayz';
 import {Observable} from "rxjs";
 import * as TYPES from './interfaces';
 
+interface ObservableEvent {
+    slot: number, 
+    name: string,
+    event: any
+}
+
 export class Dominari {
     private _CONNECTION: anchor.web3.Connection;
     private _PROVIDER: anchor.Provider;
@@ -15,6 +21,7 @@ export class Dominari {
     private _PROGRAM:Program<ditypes>;
     
     private _OBSERVABLES = {};
+    public events:Observable<ObservableEvent>; //Observable that emits events
     public EVENTLIST = [
         'NewLocationInitialized',
         'FeatureModified',
@@ -34,6 +41,8 @@ export class Dominari {
     private BUILDABLES_PK: anchor.web3.PublicKey;
     private gameNX: number;
     private gameNY: number;
+
+    private LOG_START_INDEX = "Program log: ".length;
 
     /**
      * Creates a new instance of the dominari game object.
@@ -66,14 +75,26 @@ export class Dominari {
         this.setupEventListeners();
     }
 
-    private setupEventListeners() {
-        for (let evtName of this.EVENTLIST) {
-            this._OBSERVABLES[evtName] = new Observable((observer) => {
-                this._PROGRAM.addEventListener(evtName, (evt, slot) => {
-                    observer.next({event:evt, slot:slot});
-                });
-            });
-        }
+    private setupEventListeners(){
+        this.events = new Observable((obs) => {
+            this._CONNECTION.onLogs('all', (logs, ctx) => {
+                if(logs.logs[0].startsWith(`Program ${this._PROGRAM.programId.toString()}`)){
+                    for(let log of logs.logs){
+                        if(log.startsWith("Program log:")){
+                            const logStr = log.slice(this.LOG_START_INDEX);
+                            const event = this._PROGRAM.coder.events.decode(logStr);
+                            if(event){
+                                obs.next({
+                                    slot: ctx.slot,
+                                    name: event.name,
+                                    event: event.data
+                                })
+                            }
+                        }
+                    }
+                }
+            })    
+        })
     }
 
     /**
