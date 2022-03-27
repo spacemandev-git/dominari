@@ -7,19 +7,18 @@
 //Attack first player with deployed card
 //Move troop to feature and try out Portal and Loot and Healer
 import fs from 'fs';
-import yml from 'js-yaml';
 import {Dominari} from '../js/dist/dominari';
 import {init} from './init';
 
 export async function simulate(){
     const nx = 0; 
-    const ny = parseInt(process.argv[2]);
+    const ny = 0;
 
     const game:Dominari = await init(nx,ny);
 
     //SETUP LOGS
-    game.events.subscribe((event) => {
-        fs.appendFileSync(`migrations/logs/${event.name}.yml`, yml.dump({slot: event.slot, event: event.event}));
+    const eventSubscription = game.events.subscribe((event) => {
+        fs.appendFileSync(`migrations/logs/${event.name}.out`, JSON.stringify({slot: event.slot, data: event.event}, null, 2));
     })
 
     //INIT 3x3 Grid
@@ -48,6 +47,9 @@ export async function simulate(){
             console.log(`(${x},${y}): ${locations[x][y]}`)
         }
     }
+
+    eventSubscription.unsubscribe();
+    return;
 }
 
 
