@@ -79,7 +79,7 @@ pub struct DestroyFeature<'info>{
 }
 
 #[derive(Accounts)]
-#[instruction(coords: Coords)]
+#[instruction(_id:String, nx: i64, ny:i64)]
 pub struct InitGame<'info>{
     #[account(
         constraint = authority.key() == Pubkey::from_str(ADMIN_KEY).unwrap()
@@ -88,12 +88,23 @@ pub struct InitGame<'info>{
     pub system_program: Program<'info, System>,
     #[account(init,
         seeds = [
-            coords.nx.to_be_bytes().as_ref(),
-            coords.ny.to_be_bytes().as_ref()
+            _id.as_bytes(),
+            nx.to_be_bytes().as_ref(),
+            ny.to_be_bytes().as_ref()
         ],
         bump,
         payer = authority
     )]
+    pub game: Account<'info, Game>
+}
+
+#[derive(Accounts)]
+pub struct ToggleGame<'info>{
+    #[account(
+        constraint = authority.key() == Pubkey::from_str(ADMIN_KEY).unwrap()
+    )]
+    pub authority: Signer<'info>,
+    #[account(mut)]
     pub game: Account<'info, Game>
 }
 
@@ -201,7 +212,10 @@ pub struct UnitAction<'info>{
     pub source: Account<'info, Location>,
     #[account(mut)]
     pub target: Account<'info, Location>,
-    #[account(has_one=authority)]
+    #[account(
+        mut,
+        has_one=authority
+    )]
     pub player: Account<'info, Player>,
     pub authority: Signer<'info>
 }

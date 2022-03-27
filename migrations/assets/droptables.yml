@@ -1,6 +1,7 @@
 - 
   dropTableId: 1
   id: 1
+  pointValue: 6
   meta:
     name: Scout infantry
     description: A simple scout unit. 
@@ -20,6 +21,7 @@
 - 
   dropTableId: 1
   id: 2
+  pointValue: 2
   meta:
     name: Scout Drone
     description: A standard drone unit
@@ -40,6 +42,7 @@
 - 
   dropTableId: 1
   id: 1
+  pointValue: 6
   meta:
     name: Scout infantry
     description: A simple scout unit. 
@@ -59,6 +62,7 @@
 - 
   dropTableId: 1
   id: 2
+  pointValue: 2
   meta:
     name: Scout Drone
     description: A standard drone unit
@@ -79,6 +83,7 @@
 - 
   dropTableId: 1
   id: 1
+  pointValue: 6
   meta:
     name: Scout infantry
     description: A simple scout unit. 
@@ -98,6 +103,7 @@
 - 
   dropTableId: 1
   id: 2
+  pointValue: 2
   meta:
     name: Scout Drone
     description: A standard drone unit

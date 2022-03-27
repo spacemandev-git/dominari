@@ -17,6 +17,7 @@ export interface SPACENFT {
 export interface Card {
     dropTableId: number | BN,
     id: number | BN,
+    pointValue: number | BN,
     meta: MetaInformation,
     data: CardData
 }

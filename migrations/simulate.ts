@@ -11,10 +11,11 @@ import {Dominari} from '../js/dist/dominari';
 import {init} from './init';
 
 export async function simulate(){
+    const id = "game01";
     const nx = 0; 
     const ny = 0;
 
-    const game:Dominari = await init(nx,ny);
+    const game:Dominari = await init(id, nx,ny);
 
     //SETUP LOGS
     const eventSubscription = game.events.subscribe((event) => {
@@ -49,6 +50,7 @@ export async function simulate(){
     }
 
     eventSubscription.unsubscribe();
+    game.shutdownEventListeners();
     return;
 }
 

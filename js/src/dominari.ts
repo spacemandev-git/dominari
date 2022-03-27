@@ -20,7 +20,7 @@ export class Dominari {
     private _IDL:any;
     private _PROGRAM:Program<ditypes>;
     
-    private _OBSERVABLES = {};
+    private onLogsListener: number;
     public events:Observable<ObservableEvent>; //Observable that emits events
     public EVENTLIST = [
         'NewLocationInitialized',
@@ -75,9 +75,12 @@ export class Dominari {
         this.setupEventListeners();
     }
 
-    private setupEventListeners(){
+    /**
+     * Starts up the event listener. Automatically does this on constructor, so shouldn't need to call it.
+     */
+    public setupEventListeners(){
         this.events = new Observable((obs) => {
-            this._CONNECTION.onLogs('all', (logs, ctx) => {
+            this.onLogsListener = this._CONNECTION.onLogs('all', (logs, ctx) => {
                 if(logs.logs[0].startsWith(`Program ${this._PROGRAM.programId.toString()}`)){
                     for(let log of logs.logs){
                         if(log.startsWith("Program log:")){
@@ -93,17 +96,15 @@ export class Dominari {
                         }
                     }
                 }
-            })    
+            });    
         })
     }
 
     /**
-     * Returns an observable for event listener
-     * @param eventName The name for the event you want to observe
-     * @returns An observable that can be subscribed to that pushes {event: event, slot: slot} as an object when it occurs
+     * Shuts down the events listener
      */
-    public getEventObservable(eventName:string): Observable<any> {
-        return this._OBSERVABLES[eventName];
+    public shutdownEventListeners(){
+        this._CONNECTION.removeOnLogsListener(this.onLogsListener);
     }
 
     /**
@@ -239,10 +240,51 @@ export class Dominari {
 
     /**
      * Initalizes a game at a given X,Y Coordinate
+     * @param id The unique identifier for this game
      * @param nx The neighborhood X coordinate
      * @param ny The neighborhood Y coordinate
      */
-    public async initGame(nx: number, ny: number){
+    public async initGame(id:string, nx: number, ny: number){
+        try{
+            if(!this.ADMIN_KEY.equals(this._PROVIDER.wallet.publicKey)){
+                throw new Error("Only the admin can call this function!");
+            }
+
+            const [game_acc, game_bmp] = findProgramAddressSync([
+                Buffer.from(id),
+                byteify.serializeInt64(nx),
+                byteify.serializeInt64(ny)
+            ], this._PROGRAM.programId);
+
+            await this._PROGRAM.methods
+                .initGame(
+                    id,
+                    new anchor.BN(nx),
+                    new anchor.BN(ny),
+                )
+                .accounts({
+                    authority: this._PROVIDER.wallet.publicKey,
+                    systemProgram: anchor.web3.SystemProgram.programId,
+                    game: game_acc    
+                })
+                .rpc();
+            
+            this.gameNX = nx;
+            this.gameNY = ny;
+            return await this._PROGRAM.account.game.fetch(game_acc);
+        } catch (e) {
+            throw e;
+        }
+    }
+
+    /**
+     * ADMIN ONLY
+     * Toggles the enabled state of the game allowing or disallowing moves.
+     * @param nx 
+     * @param ny 
+     * @returns 
+     */
+    public async toggleGame(nx:number, ny:number){
         try{
             if(!this.ADMIN_KEY.equals(this._PROVIDER.wallet.publicKey)){
                 throw new Error("Only the admin can call this function!");
@@ -253,26 +295,18 @@ export class Dominari {
                 byteify.serializeInt64(ny)
             ], this._PROGRAM.programId);
 
-            const tx_receipt = await this._PROGRAM.methods
-                .initGame({
-                    nx: new anchor.BN(nx),
-                    ny: new anchor.BN(ny),
-                    x: new anchor.BN(0), //doesn't really matter
-                    y: new anchor.BN(0), //doesn't really matter
-                })
+            await this._PROGRAM.methods
+                .toggleGame()
                 .accounts({
                     authority: this._PROVIDER.wallet.publicKey,
-                    systemProgram: anchor.web3.SystemProgram.programId,
                     game: game_acc    
                 })
                 .rpc();
             
-            this.gameNX = nx;
-            this.gameNY = ny;
-            return tx_receipt;
+            return await this._PROGRAM.account.game.fetch(game_acc);
         } catch (e) {
             throw e;
-        }
+        } 
     }
 
     /**
@@ -332,7 +366,15 @@ export class Dominari {
         ], this._PROGRAM.programId)
 
         return await this._PROGRAM.account.player.fetch(player_acc);
-}
+    }
+
+    /**
+     * Returns all players registered at this time
+     * @returns All players
+     */
+    public async getAllPlayers(){
+        return await this._PROGRAM.account.player.all();
+    }
 
     /**
      * Initializes a drop table with a given ID
@@ -352,7 +394,7 @@ export class Dominari {
             cards = cards.map(card => {
                 card.dropTableId = new anchor.BN(card.dropTableId);
                 card.id = new anchor.BN(id);
-
+                card.pointValue = new anchor.BN(card.pointValue);
                 if(card.data.unitmod) {
                     card.data.unitmod.stats.recovery = new anchor.BN(card.data.unitmod.stats.recovery)
                 } else if (card.data.unit) {

@@ -30,7 +30,7 @@ pub struct SpaceMetadata {
 pub struct Game {
     pub coords: Coords,
     pub authority: Pubkey,
-    pub enabled: bool    
+    pub enabled: bool,
 }
 
 #[account]
@@ -39,6 +39,7 @@ pub struct Player {
     pub authority: Pubkey,
     pub name: String,
     pub cards: Vec<Card>, //max u16 (65565 cards)
+    pub points: u64
 }
 
 #[account]

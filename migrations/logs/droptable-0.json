@@ -4,6 +4,7 @@
     {
       "dropTableId": "01",
       "id": "01",
+      "pointValue": "06",
       "meta": {
         "name": "Scout infantry",
         "description": "A simple scout unit.",
@@ -29,6 +30,7 @@
     {
       "dropTableId": "01",
       "id": "01",
+      "pointValue": "02",
       "meta": {
         "name": "Scout Drone",
         "description": "A standard drone unit",

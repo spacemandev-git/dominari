@@ -58,6 +58,7 @@ impl Default for TroopClass {
 pub struct Card{
     pub drop_table_id: u64,
     pub id: u64,
+    pub point_value: u64,
     pub meta: MetaInformation,
     pub data: CardData   
 }
@@ -101,6 +102,7 @@ pub struct StatInfo {
     pub mod_air: i8,
     pub recovery: i64, //How many slots til it can move again
 }
+
 
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, PartialEq, Debug)]
 pub struct DEBUG{

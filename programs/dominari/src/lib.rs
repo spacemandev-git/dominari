@@ -205,14 +205,24 @@ pub mod dominari {
     }
 
     // An admin can initialize a game for a specific neighborhood
-    pub fn init_game(ctx: Context<InitGame>, coords:Coords) -> ProgramResult {
+    pub fn init_game(ctx: Context<InitGame>, _id: String, nx: i64, ny: i64) -> ProgramResult {
         //What should a game contain?
         // Units deployed are tied to a game, so the Location property should have a tag for current game
         // During unit movements you should check the game tag, and if it doesn't match the current game, then treat the units as not there
         let game = &mut ctx.accounts.game;
-        game.coords = coords;
+        game.coords = Coords {nx: nx, ny: ny, x:0, y:0};
         game.authority = ctx.accounts.authority.key();
         game.enabled = true;
+        Ok(())
+    }
+
+    // An admin can disable the game when it's finished
+    pub fn toggle_game(ctx:Context<ToggleGame>) -> ProgramResult {
+        if ctx.accounts.game.enabled {
+            ctx.accounts.game.enabled = false;
+        } else {
+            ctx.accounts.game.enabled = true;
+        }
         Ok(())
     }
 
@@ -225,6 +235,7 @@ pub mod dominari {
         let starting_card = Card {
             drop_table_id: 0,
             id: 0,
+            point_value: 1, 
             meta: MetaInformation {
                 name: String::from("Scout"),
                 description: String::from("A basic Scout unit"),
@@ -369,6 +380,8 @@ pub mod dominari {
                 })   
             }
         }
+        
+        player.points += card.point_value;    
         Ok(())
     }
 
@@ -432,11 +445,11 @@ pub mod dominari {
         let game = &ctx.accounts.game;
         let source = &mut ctx.accounts.source;
         let target = &mut ctx.accounts.target;
-        let player = &ctx.accounts.player;
+        let player = &mut ctx.accounts.player;
         
         //If troops are NONE will throw an error
-        let attacking = source.troops.as_ref().unwrap();
-        let defending = target.troops.as_ref().unwrap();
+        let attacking = source.troops.as_ref().unwrap().clone();
+        let defending = target.troops.as_ref().unwrap().clone();
 
         //Source Troops belong to the player and target troops DO NOT
         if source.troop_owner != Some(player.key()) || 
@@ -483,6 +496,7 @@ pub mod dominari {
                 //defending troops wiped out
                 target.troops = None;
                 target.troop_owner = None;
+                player.points += defending.data.max_power as u64;
             } else {
                 let mut modified_defending = defending.clone();
                 modified_defending.data.power = def_result as i8;

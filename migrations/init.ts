@@ -5,7 +5,7 @@ import yml from 'js-yaml';
 import * as anchor from '@project-serum/anchor';
 
 
-export async function init(nx:number, ny:number){
+export async function init(id:string, nx:number, ny:number){
     const APOLLO_KEYPAIR = anchor.web3.Keypair.fromSecretKey(bs58.decode(fs.readFileSync('migrations/assets/apollo.txt').toString()))
     const CONN_STRING = "http://localhost:8899"; // devnet: https://psytrbhymqlkfrhudd.dev.genesysgo.net:8899/
     const CONTRACT_ADDRESS = "BGYHifTqRGUnJMfugZn5sbAZqjMR6bPZ98NmLcDeb7N7";
@@ -13,7 +13,7 @@ export async function init(nx:number, ny:number){
     const game = new Dominari(CONN_STRING, CONTRACT_ADDRESS, APOLLO_KEYPAIR, IDL);
 
     // Init Game
-    await game.initGame(nx,ny);
+    await game.initGame(id,nx,ny);
     console.log(`Initialized Game in Neighborhood (${nx},${ny})`)
     //return game; // DEBUG SINCE DTs and Bs have already been initialized
     
