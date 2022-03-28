@@ -11,3 +11,4 @@ js/dist
 js/.rollup.cache
 
 dominari-ledger
+migrations/logs

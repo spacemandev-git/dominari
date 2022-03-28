@@ -398,7 +398,7 @@ pub mod dominari {
         source.troops.as_ref().unwrap().gamekey != game.key() ||
         (target.troops != None && target.troops.as_ref().unwrap().gamekey == game.key())
         {
-            return Err(CustomError::InvalidMove.into())
+            return Err(CustomError::InvalidMoveGameCheck.into())
         }
 
         //Move must be to an adjacent tile
@@ -407,19 +407,19 @@ pub mod dominari {
         source.coords.y < target.coords.y-1 ||
         source.coords.y > target.coords.y+1 
         {
-            return Err(CustomError::InvalidMove.into())
+            return Err(CustomError::InvalidMoveRangeCheck.into())
         } 
 
         //source troops must belong to the player
         if source.troop_owner != Some(player.key()) {
-            return Err(CustomError::InvalidMove.into())
+            return Err(CustomError::InvalidMoveOwnershipCheck.into())
         }
         
         //source troops must have surpassed their recovery threshold
         let clock = Clock::get().unwrap();
         let troops = source.troops.as_ref().unwrap();
         if clock.slot < (troops.last_moved + troops.data.recovery as u64) {
-            return Err(CustomError::InvalidMove.into());
+            return Err(CustomError::InvalidMoveRecoveryCheck.into());
         }
 
         //Move the troops
@@ -455,25 +455,25 @@ pub mod dominari {
         //Source Troops belong to the player and target troops DO NOT
         if source.troop_owner != Some(player.key()) || 
         target.troop_owner == Some(player.key()) {
-            return Err(CustomError::InvalidAttack.into())
+            return Err(CustomError::InvalidAttackOwnershipCheck.into())
         }
 
         //Troops from source and target both belong to THIS game.
         if attacking.gamekey != game.key() || defending.gamekey != game.key() {
-            return Err(CustomError::InvalidAttack.into())
+            return Err(CustomError::InvalidAttackGameCheck.into())
         }
 
         //source and target are within range of the attacking troops
         let distance:f64 = (((target.coords.x - source.coords.x).pow(2) + (target.coords.y - source.coords.y).pow(2)) as f64).sqrt();
         if distance > attacking.data.range.into() {
-            return Err(CustomError::InvalidAttack.into())
+            return Err(CustomError::InvalidAttackRangeCheck.into())
         }
 
         //attacking troops have recovered from previous move
         let clock = Clock::get().unwrap();
             //u64 can be inferred here because it's not a mod, so it will always be positive 
         if (attacking.last_moved + attacking.data.recovery as u64) < clock.slot {
-            return Err(CustomError::InvalidAttack.into())
+            return Err(CustomError::InvalidAttackRecoveryCheck.into())
         }
         
         if attacking.data.range == 1 {
@@ -695,7 +695,7 @@ pub mod dominari {
 
                 //Troops from this game exist on the destination tile
                 if destination.troops != None && destination.troops.as_ref().unwrap().gamekey == game.key(){
-                    return Err(CustomError::InvalidMove.into())
+                    return Err(CustomError::InvalidMoveGameCheck.into())
                 }
 
                 destination.troops = location.troops.clone();

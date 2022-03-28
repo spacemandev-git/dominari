@@ -1,9 +1,3 @@
-//Set up Logs
-//Initalize a bunch of spaces
-//Build features on a couple spaces
-//Register a player
-//Play a card onto an initalized space
-//Regiser Second player
 //Attack first player with deployed card
 //Move troop to feature and try out Portal and Loot and Healer
 import fs from 'fs';
@@ -62,6 +56,8 @@ export async function simulate(){
         }
     }
 
+    console.log("Empty 5x5 Grid");
+    fs.appendFileSync('migrations/logs/prettyprint.out', "Empty 5x5 Grid\n");
     await prettyPrint5x5(game, locationAddressesToCoordinate);
 
     //Build Features on four spaces
@@ -76,14 +72,16 @@ export async function simulate(){
     buildablePromises.push(game.debugBuild({nx:0,ny:0,x:1,y:0}, 2));
     const locationAccountsAfterBuild = await Promise.all(buildablePromises);
     fs.appendFileSync("migrations/logs/terminal.out", JSON.stringify(locationAccountsAfterBuild, null, 2) + "\n\n");
+    console.log("Building Portals, Healer and Lootable Feature on Grid");
+    fs.appendFileSync('migrations/logs/prettyprint.out', "\n\nBuilding Portals, Healer and Lootable Feature on Grid\n");
     await prettyPrint5x5(game, locationAddressesToCoordinate);
 
     //Register a couple players
     fs.appendFileSync('migrations/logs/terminal.out', "Registering Players\n");
     const player1 = await game.registerPlayer("Player1");
-    console.log("Player1: ", player1);
+    fs.appendFileSync('migrations/logs/terminal.out', "\nPlayer 1: \n"+JSON.stringify(player1,null,2)+"\n")
     const player2 = await game2.registerPlayer("Player2");
-    console.log("Player2: ", player2);
+    fs.appendFileSync('migrations/logs/terminal.out', "\nPlayer 2: \n"+JSON.stringify(player2,null,2)+"\n")
     fs.appendFileSync('migrations/logs/terminal.out', JSON.stringify({player1: player1, player2:player2}, null, 2) + "\n\n");
 
     //Play Scout on (1,1) and (1,2)
@@ -91,7 +89,21 @@ export async function simulate(){
     const loc1 = await game.playCard({nx:nx, ny:ny, x:1, y:1}, 0);
     const loc2 = await game2.playCard({nx:nx, ny:ny, x:1, y:2}, 0);
     fs.appendFileSync('migrations/logs/terminal.out', JSON.stringify({loc1: loc1, loc2:loc2}, null, 2) + "\n\n");
+    console.log("Playing two scouts.");
+    fs.appendFileSync('migrations/logs/prettyprint.out', "\n\nPlaying two scouts\n");
     await prettyPrint5x5(game, locationAddressesToCoordinate);
+
+    //Attack from (1,1) to (1,2)
+    console.log("Attacking from (1,1) to (1,2)");
+    let [src, dest] = await game.attack({nx,ny,x:1,y:1}, {nx,ny,x:1,y:2});
+    await prettyPrint5x5(game, locationAddressesToCoordinate);
+
+    while(dest.troopOwner != null){
+        console.log("Attacking from (1,1) to (1,2)");
+        let [src, dest] = await game.attack({nx,ny,x:1,y:1}, {nx,ny,x:1,y:2});
+        await prettyPrint5x5(game, locationAddressesToCoordinate);    
+    }
+    console.log(JSON.stringify(await game.getAllPlayers(),null,2));
 
     //Cleanup
     eventSubscription.unsubscribe();
@@ -132,7 +144,7 @@ async function prettyPrint5x5(game: Dominari, locations:any){
     | T: ${gi(-2,1).t}      |    | T: ${gi(-1,1).t}     |    | T: ${gi(0,1).t}      |    | T: ${gi(1,1).t}      |    | T: ${gi(2,1).t}      |
     | B: ${gi(-2,1).b}      |    | B: ${gi(-1,1).b}     |    | B: ${gi(0,1).b}      |    | B: ${gi(1,1).b}      |    | B: ${gi(2,1).b}      |
     | P: ${gi(-2,1).p}      |    | P: ${gi(-1,1).p}     |    | P: ${gi(0,1).p}      |    | P: ${gi(1,1).p}      |    | P: ${gi(2,1).p}      |
-    | C: ${gi(-2,1).c}      |    | C: ${gi(-1,1).c}     |    | C: ${gi(0,2).c}      |    | C: ${gi(1,2).c}      |    | C: ${gi(2,2).c}      |
+    | C: ${gi(-2,1).c}      |    | C: ${gi(-1,1).c}     |    | C: ${gi(0,2).c}      |    | C: ${gi(1,1).c}      |    | C: ${gi(2,2).c}      |
     _________________________________________________________________________________________________________________________________________
     | T: ${gi(-2,0).t}      |    | T: ${gi(-1,0).t}     |    | T: ${gi(0,0).t}      |    | T: ${gi(1,0).t}      |    | T: ${gi(2,0).t}      |
     | B: ${gi(-2,0).b}      |    | B: ${gi(-1,0).b}     |    | B: ${gi(0,0).b}      |    | B: ${gi(1,0).b}      |    | B: ${gi(2,0).b}      |

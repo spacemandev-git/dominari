@@ -632,14 +632,14 @@ export class Dominari {
                 .attack()
                 .accounts({
                     game: game_acc,
-                    soruce: source_acc,
+                    source: source_acc,
                     target: destination_acc,
                     player: player_acc,
                     authority: this._PROVIDER.wallet.publicKey
                 })
                 .rpc();
 
-            return await this._PROGRAM.account.location.fetchMultiple([source_acc,destination_acc]);
+            return [await this._PROGRAM.account.location.fetch(source_acc), await this._PROGRAM.account.location.fetch(destination_acc)];
         } catch (e) {
             throw e;
         }

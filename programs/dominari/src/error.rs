@@ -17,11 +17,29 @@ pub enum CustomError {
     #[msg("Mod cannot be applied")]
     InvalidMod,
 
-    #[msg("Invalid Move")]
-    InvalidMove,
+    #[msg("Invalid Move: Ownership Check")]
+    InvalidMoveOwnershipCheck,
 
-    #[msg("Invalid Attack")]
-    InvalidAttack,
+    #[msg("Invalid Move: Game Check")]
+    InvalidMoveGameCheck,
+
+    #[msg("Invalid Move: Range Check")]
+    InvalidMoveRangeCheck,
+
+    #[msg("Invalid Move: Recovery Check")]
+    InvalidMoveRecoveryCheck,
+
+    #[msg("Invalid Attack: Ownership Check")]
+    InvalidAttackOwnershipCheck,
+
+    #[msg("Invalid Attack: Game Check")]
+    InvalidAttackGameCheck,
+
+    #[msg("Invalid Attack: Range Check")]
+    InvalidAttackRangeCheck,
+
+    #[msg("Invalid Attack: Recovery Check")]
+    InvalidAttackRecoveryCheck,
 
     #[msg("Feature already at max Rank")]
     FeatureMaxRank,
