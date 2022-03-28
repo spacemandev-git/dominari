@@ -1,4 +1,5 @@
 import {BN} from '@project-serum/anchor';
+import {web3} from '@project-serum/anchor';
 
 export interface Coords {
     nx: number,
@@ -58,10 +59,11 @@ export interface TroopClass {
 export interface Feature {
     id: number | BN,
     maxRank: number | BN,
-    rank: number | BN,
+    rank: number,
     rankUpgradeCostMultiplier: number | BN,
     costForUseLadder: number[] | BN[],
     linkRankLadder: string[],
+    nameRankLadder: string[],
     properties: FeatureType,
     lastUsed: number | BN,
     recovery: number | BN
@@ -84,4 +86,24 @@ export interface FT_LootableFeature {
 
 export interface FT_Healer{
     powerHealedPerRank: number | BN
+}
+
+export interface LocationAccount {
+    initializer: web3.PublicKey,
+    bump: number,
+    coords: Coords,
+    lamportsInvested: BN,
+    lamportsHarvested: BN,
+    feature?: Feature,
+    lamportsPlayerSpent: BN,
+    lamportsBuilderHarvested: BN,
+    troops?: Troop,
+    troopOwner?: web3.PublicKey
+}
+
+export interface Troop {
+    meta: MetaInformation,
+    data: StatInfo,
+    lastMoved: BN,
+    gamekey: web3.PublicKey
 }

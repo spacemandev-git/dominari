@@ -39,9 +39,10 @@ export class Dominari {
     private SPACE_PROGRAM_ID = new anchor.web3.PublicKey('XSPCZghPXkWTWpvrfQ34Szpx3rwmUjsxebRFf5ckbMD');
     private EXTEND_BASE_PK = new anchor.web3.PublicKey('XBSEZzB7ojaKgXqfCSpNbPLnuMGk3JVtSKYjXYqg7Pn');
     private BUILDABLES_PK: anchor.web3.PublicKey;
-    private gameID: string;
-    private gameNX: number;
-    private gameNY: number;
+    
+    public gameID: string;
+    public gameNX: number;
+    public gameNY: number;
 
     private LOG_START_INDEX = "Program log: ".length;
 
@@ -69,11 +70,10 @@ export class Dominari {
         this._PROGRAM = new anchor.Program<ditypes>(this._IDL, _CONTRACT_ADDRESS, this._PROVIDER);
         let [buildables_address, buildables_bmp] = findProgramAddressSync([Buffer.from("buildables")],this._PROGRAM.programId);
         this.BUILDABLES_PK = buildables_address;
-        if(_nx && _ny && _gameID){
-            this.gameNX = _nx,
-            this.gameNY = _ny
-            this.gameID = _gameID
-        }
+        
+        this.gameNX = _nx ? _nx : 0;
+        this.gameNY = _ny ? _ny : 0;
+        this.gameID = _gameID ? _gameID : "";
 
         this.setupEventListeners();
     }
@@ -283,6 +283,7 @@ export class Dominari {
             
             this.gameNX = nx;
             this.gameNY = ny;
+            this.gameID = id;
             return await this._PROGRAM.account.game.fetch(game_acc);
         } catch (e) {
             throw e;
@@ -327,7 +328,7 @@ export class Dominari {
      */
     public async registerPlayer(playerName:string){
         try {
-            if(!this.gameNX || !this.gameNY || !this.gameID){
+            if(!this.gameID){
                 throw new Error("Please initalize a game first!");
             }
 
@@ -363,7 +364,7 @@ export class Dominari {
      * @param playerPK The player public key
      */
     public async getPlayerFromPublicKey(playerPK: string){
-        if(!this.gameNX || !this.gameNY || !this.gameID){
+        if(!this.gameID){
             throw new Error("Please initalize a game first!");
         }
 
@@ -498,7 +499,7 @@ export class Dominari {
      */
     public async playCard(coord:TYPES.Coords, card_idx:number){
         try {
-            if(!this.gameNX || !this.gameNY || !this.gameID){
+            if(!this.gameID){
                 throw new Error("Please initalize a game first!");
             }
     
@@ -544,7 +545,7 @@ export class Dominari {
      */
     public async move(source: TYPES.Coords, destination: TYPES.Coords){
         try {
-            if(!this.gameNX || !this.gameNY || !this.gameID){
+            if(!this.gameID){
                 throw new Error("Please initalize a game first!");
             }
     
@@ -598,7 +599,7 @@ export class Dominari {
      */    
     public async attack(source: TYPES.Coords, destination: TYPES.Coords){
         try {
-            if(!this.gameNX || !this.gameNY || !this.gameID){
+            if(!this.gameID){
                 throw new Error("Please initalize a game first!");
             }
     
@@ -729,7 +730,7 @@ export class Dominari {
      */
     public async activatePortal(source:TYPES.Coords, destination:TYPES.Coords){
         try{
-            if(!this.gameNX || !this.gameNY || !this.gameID){
+            if(!this.gameID){
                 throw new Error("Please initalize a game first!");
             }
     
@@ -788,7 +789,7 @@ export class Dominari {
      * @returns 
      */
     public async activateLootableFeature(source:TYPES.Coords){
-        if(!this.gameNX || !this.gameNY || !this.gameID){
+        if(!this.gameID){
             throw new Error("Please initalize a game first!");
         }
 
@@ -845,7 +846,7 @@ export class Dominari {
      * @param source 
      */
     public async activateHealer(source:TYPES.Coords){
-        if(!this.gameNX || !this.gameNY || !this.gameID){
+        if(!this.gameID){
             throw new Error("Please initalize a game first!");
         }
 

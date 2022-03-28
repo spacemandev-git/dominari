@@ -229,6 +229,7 @@ pub mod dominari {
     // A player can register to play for a specific game. This gives them a starting card.
     pub fn register_player(ctx:Context<RegisterPlayer>, name:String) -> ProgramResult {
         let player = &mut ctx.accounts.player;
+        player.gamekey = ctx.accounts.game.key();
         player.authority = ctx.accounts.authority.key();
         player.name = name;
 

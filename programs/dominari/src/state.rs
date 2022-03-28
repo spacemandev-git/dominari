@@ -24,7 +24,6 @@ pub enum FeatureType {
 
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, Debug, PartialEq)]
 pub struct Feature{
-    pub name: String,
     pub id: u16,
     pub max_rank: u8,
     pub rank: u8,

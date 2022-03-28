@@ -11,6 +11,7 @@ import {Dominari} from '../js/dist/dominari';
 import {init} from './init';
 import * as anchor from '@project-serum/anchor';
 import {bs58} from '@project-serum/anchor/dist/cjs/utils/bytes';
+import { LocationAccount } from '../js/src';
 
 
 export async function simulate(){
@@ -26,7 +27,6 @@ export async function simulate(){
         JSON.parse(fs.readFileSync('target/idl/dominari.json').toString()),
         nx,ny,id
     );
-    game2.shutdownEventListeners();
 
     //SETUP LOGS
     const eventSubscription = game.events.subscribe((event) => {
@@ -62,6 +62,8 @@ export async function simulate(){
         }
     }
 
+    await prettyPrint5x5(game, locationAddressesToCoordinate);
+
     //Build Features on four spaces
     fs.appendFileSync('migrations/logs/terminal.out', "Building Features\n");
     let buildablePromises = [];
@@ -74,11 +76,14 @@ export async function simulate(){
     buildablePromises.push(game.debugBuild({nx:0,ny:0,x:1,y:0}, 2));
     const locationAccountsAfterBuild = await Promise.all(buildablePromises);
     fs.appendFileSync("migrations/logs/terminal.out", JSON.stringify(locationAccountsAfterBuild, null, 2) + "\n\n");
+    await prettyPrint5x5(game, locationAddressesToCoordinate);
 
     //Register a couple players
     fs.appendFileSync('migrations/logs/terminal.out', "Registering Players\n");
     const player1 = await game.registerPlayer("Player1");
+    console.log("Player1: ", player1);
     const player2 = await game2.registerPlayer("Player2");
+    console.log("Player2: ", player2);
     fs.appendFileSync('migrations/logs/terminal.out', JSON.stringify({player1: player1, player2:player2}, null, 2) + "\n\n");
 
     //Play Scout on (1,1) and (1,2)
@@ -86,6 +91,7 @@ export async function simulate(){
     const loc1 = await game.playCard({nx:nx, ny:ny, x:1, y:1}, 0);
     const loc2 = await game2.playCard({nx:nx, ny:ny, x:1, y:2}, 0);
     fs.appendFileSync('migrations/logs/terminal.out', JSON.stringify({loc1: loc1, loc2:loc2}, null, 2) + "\n\n");
+    await prettyPrint5x5(game, locationAddressesToCoordinate);
 
     //Cleanup
     eventSubscription.unsubscribe();
@@ -94,5 +100,58 @@ export async function simulate(){
 }
 
 
+async function prettyPrint5x5(game: Dominari, locations:any){
+    const location_accs = await game.getLocationsByAddress(Object.keys(locations));
+    const gi = (x:number,y:number) => {
+        const account:LocationAccount = <LocationAccount>location_accs.find((loc:any) => (
+            new anchor.BN(x).eq(<anchor.BN>loc.coords.x) &&
+            new anchor.BN(y).eq(<anchor.BN>loc.coords.y)
+        ));
+
+        if(!account) { 
+            console.log(`No account found for ${x},${y}`);
+            return undefined;
+        }
+
+        return {
+            t: account.troops ? (account.troops.meta.name.substring(0,10) + `| ${account.troops.data.power}`).padEnd(14) : "".padEnd(14),
+            b: account.feature ? (account.feature.nameRankLadder[account.feature.rank-1].substring(0,12) + `| ${account.feature.rank}`).padEnd(14) : "".padEnd(14),
+            p: account.troopOwner ? (account.troopOwner.toString().substring(0,14)).padEnd(14) : "".padEnd(14),
+            c: `(${x},${y})`.padEnd(14)
+        }
+    }
+
+
+    let printout = 
+    `
+    | T: ${gi(-2,2).t}      |    | T: ${gi(-1,2).t}     |    | T: ${gi(0,2).t}      |    | T: ${gi(1,2).t}      |    | T: ${gi(2,2).t}      |
+    | B: ${gi(-2,2).b}      |    | B: ${gi(-1,2).b}     |    | B: ${gi(0,2).b}      |    | B: ${gi(1,2).b}      |    | B: ${gi(2,2).b}      |
+    | P: ${gi(-2,2).p}      |    | P: ${gi(-1,2).p}     |    | P: ${gi(0,2).p}      |    | P: ${gi(1,2).p}      |    | P: ${gi(2,2).p}      |
+    | C: ${gi(-2,2).c}      |    | C: ${gi(-1,2).c}     |    | C: ${gi(0,2).c}      |    | C: ${gi(1,2).c}      |    | C: ${gi(2,2).c}      |
+    _________________________________________________________________________________________________________________________________________
+    | T: ${gi(-2,1).t}      |    | T: ${gi(-1,1).t}     |    | T: ${gi(0,1).t}      |    | T: ${gi(1,1).t}      |    | T: ${gi(2,1).t}      |
+    | B: ${gi(-2,1).b}      |    | B: ${gi(-1,1).b}     |    | B: ${gi(0,1).b}      |    | B: ${gi(1,1).b}      |    | B: ${gi(2,1).b}      |
+    | P: ${gi(-2,1).p}      |    | P: ${gi(-1,1).p}     |    | P: ${gi(0,1).p}      |    | P: ${gi(1,1).p}      |    | P: ${gi(2,1).p}      |
+    | C: ${gi(-2,1).c}      |    | C: ${gi(-1,1).c}     |    | C: ${gi(0,2).c}      |    | C: ${gi(1,2).c}      |    | C: ${gi(2,2).c}      |
+    _________________________________________________________________________________________________________________________________________
+    | T: ${gi(-2,0).t}      |    | T: ${gi(-1,0).t}     |    | T: ${gi(0,0).t}      |    | T: ${gi(1,0).t}      |    | T: ${gi(2,0).t}      |
+    | B: ${gi(-2,0).b}      |    | B: ${gi(-1,0).b}     |    | B: ${gi(0,0).b}      |    | B: ${gi(1,0).b}      |    | B: ${gi(2,0).b}      |
+    | P: ${gi(-2,0).p}      |    | P: ${gi(-1,0).p}     |    | P: ${gi(0,0).p}      |    | P: ${gi(1,0).p}      |    | P: ${gi(2,0).p}      |
+    | C: ${gi(-2,0).c}      |    | C: ${gi(-1,0).c}     |    | C: ${gi(0,0).c}      |    | C: ${gi(1,0).c}      |    | C: ${gi(2,0).c}      |
+    _________________________________________________________________________________________________________________________________________
+    | T: ${gi(-2,-1).t}     |    | T: ${gi(-1,-1).t}    |    | T: ${gi(0,-1).t}     |    | T: ${gi(1,-1).t}     |    | T: ${gi(2,-1).t}     |
+    | B: ${gi(-2,-1).b}     |    | B: ${gi(-1,-1).b}    |    | B: ${gi(0,-1).b}     |    | B: ${gi(1,-1).b}     |    | B: ${gi(2,-1).b}     |
+    | P: ${gi(-2,-1).p}     |    | P: ${gi(-1,-1).p}    |    | P: ${gi(0,-1).p}     |    | P: ${gi(1,-1).p}     |    | P: ${gi(2,-1).p}     |
+    | C: ${gi(-2,-1).c}     |    | C: ${gi(-1,-1).c}    |    | C: ${gi(0,-1).c}     |    | C: ${gi(1,-1).c}     |    | C: ${gi(2,-1).c}     |
+    _________________________________________________________________________________________________________________________________________
+    | T: ${gi(-2,-2).t}     |    | T: ${gi(-1,-2).t}    |    | T: ${gi(0,-2).t}     |    | T: ${gi(1,-2).t}     |    | T: ${gi(2,-2).t}     |
+    | B: ${gi(-2,-2).b}     |    | B: ${gi(-1,-2).b}    |    | B: ${gi(0,-2).b}     |    | B: ${gi(1,-2).b}     |    | B: ${gi(2,-2).b}     |
+    | P: ${gi(-2,-2).p}     |    | P: ${gi(-1,-2).p}    |    | P: ${gi(0,-2).p}     |    | P: ${gi(1,-2).p}     |    | P: ${gi(2,-2).p}     |
+    | C: ${gi(-2,-2).c}     |    | C: ${gi(-1,-2).c}    |    | C: ${gi(0,-2).c}     |    | C: ${gi(1,-2).c}     |    | C: ${gi(2,-2).c}     |
+    _________________________________________________________________________________________________________________________________________
+    \n`
+    fs.appendFileSync("migrations/logs/prettyprint.out", printout);
+    console.log(printout);
+}
 
 simulate();
