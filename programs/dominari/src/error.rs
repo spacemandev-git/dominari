@@ -29,6 +29,9 @@ pub enum CustomError {
     #[msg("Invalid Move: Recovery Check")]
     InvalidMoveRecoveryCheck,
 
+    #[msg("Invalid Attack: Troops Check")]
+    InvalidAttackTroopsCheck,
+
     #[msg("Invalid Attack: Ownership Check")]
     InvalidAttackOwnershipCheck,
 

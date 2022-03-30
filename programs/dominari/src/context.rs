@@ -93,7 +93,8 @@ pub struct InitGame<'info>{
             ny.to_be_bytes().as_ref()
         ],
         bump,
-        payer = authority
+        payer = authority,
+        space = 8+256
     )]
     pub game: Account<'info, Game>
 }

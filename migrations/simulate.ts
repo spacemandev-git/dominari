@@ -1,4 +1,6 @@
 //Attack first player with deployed card
+//Move
+//Upgrade unit with unit mod
 //Move troop to feature and try out Portal and Loot and Healer
 import fs from 'fs';
 import {Dominari} from '../js/dist/dominari';
@@ -94,16 +96,27 @@ export async function simulate(){
     await prettyPrint5x5(game, locationAddressesToCoordinate);
 
     //Attack from (1,1) to (1,2)
+    await new Promise(r => setTimeout(r, 2000));
     console.log("Attacking from (1,1) to (1,2)");
     let [src, dest] = await game.attack({nx,ny,x:1,y:1}, {nx,ny,x:1,y:2});
     await prettyPrint5x5(game, locationAddressesToCoordinate);
 
     while(dest.troopOwner != null){
+        console.log("Last Moved: ", src.troops.lastMoved.toNumber());
+        console.log("Recovery: ", (<anchor.BN>src.troops.data['recovery']).toNumber());
+        console.log("Current Slot: ",await game.getConnection().getSlot());
         console.log("Attacking from (1,1) to (1,2)");
-        let [src, dest] = await game.attack({nx,ny,x:1,y:1}, {nx,ny,x:1,y:2});
-        await prettyPrint5x5(game, locationAddressesToCoordinate);    
+        try{
+            [src, dest] = await game.attack({nx,ny,x:1,y:1}, {nx,ny,x:1,y:2});
+            await prettyPrint5x5(game, locationAddressesToCoordinate);        
+        } catch (e) {
+            console.log("Source Troops recoverying..");
+            await new Promise(r => setTimeout(r, 2000));
+        }
     }
     console.log(JSON.stringify(await game.getAllPlayers(),null,2));
+
+    //MOVE from (1,1) to (1,2)
 
     //Cleanup
     eventSubscription.unsubscribe();
@@ -136,31 +149,31 @@ async function prettyPrint5x5(game: Dominari, locations:any){
 
     let printout = 
     `
-    | T: ${gi(-2,2).t}      |    | T: ${gi(-1,2).t}     |    | T: ${gi(0,2).t}      |    | T: ${gi(1,2).t}      |    | T: ${gi(2,2).t}      |
-    | B: ${gi(-2,2).b}      |    | B: ${gi(-1,2).b}     |    | B: ${gi(0,2).b}      |    | B: ${gi(1,2).b}      |    | B: ${gi(2,2).b}      |
-    | P: ${gi(-2,2).p}      |    | P: ${gi(-1,2).p}     |    | P: ${gi(0,2).p}      |    | P: ${gi(1,2).p}      |    | P: ${gi(2,2).p}      |
-    | C: ${gi(-2,2).c}      |    | C: ${gi(-1,2).c}     |    | C: ${gi(0,2).c}      |    | C: ${gi(1,2).c}      |    | C: ${gi(2,2).c}      |
-    _________________________________________________________________________________________________________________________________________
-    | T: ${gi(-2,1).t}      |    | T: ${gi(-1,1).t}     |    | T: ${gi(0,1).t}      |    | T: ${gi(1,1).t}      |    | T: ${gi(2,1).t}      |
-    | B: ${gi(-2,1).b}      |    | B: ${gi(-1,1).b}     |    | B: ${gi(0,1).b}      |    | B: ${gi(1,1).b}      |    | B: ${gi(2,1).b}      |
-    | P: ${gi(-2,1).p}      |    | P: ${gi(-1,1).p}     |    | P: ${gi(0,1).p}      |    | P: ${gi(1,1).p}      |    | P: ${gi(2,1).p}      |
-    | C: ${gi(-2,1).c}      |    | C: ${gi(-1,1).c}     |    | C: ${gi(0,2).c}      |    | C: ${gi(1,1).c}      |    | C: ${gi(2,2).c}      |
-    _________________________________________________________________________________________________________________________________________
-    | T: ${gi(-2,0).t}      |    | T: ${gi(-1,0).t}     |    | T: ${gi(0,0).t}      |    | T: ${gi(1,0).t}      |    | T: ${gi(2,0).t}      |
-    | B: ${gi(-2,0).b}      |    | B: ${gi(-1,0).b}     |    | B: ${gi(0,0).b}      |    | B: ${gi(1,0).b}      |    | B: ${gi(2,0).b}      |
-    | P: ${gi(-2,0).p}      |    | P: ${gi(-1,0).p}     |    | P: ${gi(0,0).p}      |    | P: ${gi(1,0).p}      |    | P: ${gi(2,0).p}      |
-    | C: ${gi(-2,0).c}      |    | C: ${gi(-1,0).c}     |    | C: ${gi(0,0).c}      |    | C: ${gi(1,0).c}      |    | C: ${gi(2,0).c}      |
-    _________________________________________________________________________________________________________________________________________
-    | T: ${gi(-2,-1).t}     |    | T: ${gi(-1,-1).t}    |    | T: ${gi(0,-1).t}     |    | T: ${gi(1,-1).t}     |    | T: ${gi(2,-1).t}     |
-    | B: ${gi(-2,-1).b}     |    | B: ${gi(-1,-1).b}    |    | B: ${gi(0,-1).b}     |    | B: ${gi(1,-1).b}     |    | B: ${gi(2,-1).b}     |
-    | P: ${gi(-2,-1).p}     |    | P: ${gi(-1,-1).p}    |    | P: ${gi(0,-1).p}     |    | P: ${gi(1,-1).p}     |    | P: ${gi(2,-1).p}     |
-    | C: ${gi(-2,-1).c}     |    | C: ${gi(-1,-1).c}    |    | C: ${gi(0,-1).c}     |    | C: ${gi(1,-1).c}     |    | C: ${gi(2,-1).c}     |
-    _________________________________________________________________________________________________________________________________________
-    | T: ${gi(-2,-2).t}     |    | T: ${gi(-1,-2).t}    |    | T: ${gi(0,-2).t}     |    | T: ${gi(1,-2).t}     |    | T: ${gi(2,-2).t}     |
-    | B: ${gi(-2,-2).b}     |    | B: ${gi(-1,-2).b}    |    | B: ${gi(0,-2).b}     |    | B: ${gi(1,-2).b}     |    | B: ${gi(2,-2).b}     |
-    | P: ${gi(-2,-2).p}     |    | P: ${gi(-1,-2).p}    |    | P: ${gi(0,-2).p}     |    | P: ${gi(1,-2).p}     |    | P: ${gi(2,-2).p}     |
-    | C: ${gi(-2,-2).c}     |    | C: ${gi(-1,-2).c}    |    | C: ${gi(0,-2).c}     |    | C: ${gi(1,-2).c}     |    | C: ${gi(2,-2).c}     |
-    _________________________________________________________________________________________________________________________________________
+    | T: ${gi(-2,2).t}      || T: ${gi(-1,2).t}     || T: ${gi(0,2).t}      || T: ${gi(1,2).t}      || T: ${gi(2,2).t}      |
+    | B: ${gi(-2,2).b}      || B: ${gi(-1,2).b}     || B: ${gi(0,2).b}      || B: ${gi(1,2).b}      || B: ${gi(2,2).b}      |
+    | P: ${gi(-2,2).p}      || P: ${gi(-1,2).p}     || P: ${gi(0,2).p}      || P: ${gi(1,2).p}      || P: ${gi(2,2).p}      |
+    | C: ${gi(-2,2).c}      || C: ${gi(-1,2).c}     || C: ${gi(0,2).c}      || C: ${gi(1,2).c}      || C: ${gi(2,2).c}      |
+    _________________________________________________________________________________________________________________________
+    | T: ${gi(-2,1).t}      || T: ${gi(-1,1).t}     || T: ${gi(0,1).t}      || T: ${gi(1,1).t}      || T: ${gi(2,1).t}      |
+    | B: ${gi(-2,1).b}      || B: ${gi(-1,1).b}     || B: ${gi(0,1).b}      || B: ${gi(1,1).b}      || B: ${gi(2,1).b}      |
+    | P: ${gi(-2,1).p}      || P: ${gi(-1,1).p}     || P: ${gi(0,1).p}      || P: ${gi(1,1).p}      || P: ${gi(2,1).p}      |
+    | C: ${gi(-2,1).c}      || C: ${gi(-1,1).c}     || C: ${gi(0,2).c}      || C: ${gi(1,1).c}      || C: ${gi(2,2).c}      |
+    _________________________________________________________________________________________________________________________
+    | T: ${gi(-2,0).t}      || T: ${gi(-1,0).t}     || T: ${gi(0,0).t}      || T: ${gi(1,0).t}      || T: ${gi(2,0).t}      |
+    | B: ${gi(-2,0).b}      || B: ${gi(-1,0).b}     || B: ${gi(0,0).b}      || B: ${gi(1,0).b}      || B: ${gi(2,0).b}      |
+    | P: ${gi(-2,0).p}      || P: ${gi(-1,0).p}     || P: ${gi(0,0).p}      || P: ${gi(1,0).p}      || P: ${gi(2,0).p}      |
+    | C: ${gi(-2,0).c}      || C: ${gi(-1,0).c}     || C: ${gi(0,0).c}      || C: ${gi(1,0).c}      || C: ${gi(2,0).c}      |
+    _________________________________________________________________________________________________________________________
+    | T: ${gi(-2,-1).t}     || T: ${gi(-1,-1).t}    || T: ${gi(0,-1).t}     || T: ${gi(1,-1).t}     || T: ${gi(2,-1).t}     |
+    | B: ${gi(-2,-1).b}     || B: ${gi(-1,-1).b}    || B: ${gi(0,-1).b}     || B: ${gi(1,-1).b}     || B: ${gi(2,-1).b}     |
+    | P: ${gi(-2,-1).p}     || P: ${gi(-1,-1).p}    || P: ${gi(0,-1).p}     || P: ${gi(1,-1).p}     || P: ${gi(2,-1).p}     |
+    | C: ${gi(-2,-1).c}     || C: ${gi(-1,-1).c}    || C: ${gi(0,-1).c}     || C: ${gi(1,-1).c}     || C: ${gi(2,-1).c}     |
+    _________________________________________________________________________________________________________________________
+    | T: ${gi(-2,-2).t}     || T: ${gi(-1,-2).t}    || T: ${gi(0,-2).t}     || T: ${gi(1,-2).t}     || T: ${gi(2,-2).t}     |
+    | B: ${gi(-2,-2).b}     || B: ${gi(-1,-2).b}    || B: ${gi(0,-2).b}     || B: ${gi(1,-2).b}     || B: ${gi(2,-2).b}     |
+    | P: ${gi(-2,-2).p}     || P: ${gi(-1,-2).p}    || P: ${gi(0,-2).p}     || P: ${gi(1,-2).p}     || P: ${gi(2,-2).p}     |
+    | C: ${gi(-2,-2).c}     || C: ${gi(-1,-2).c}    || C: ${gi(0,-2).c}     || C: ${gi(1,-2).c}     || C: ${gi(2,-2).c}     |
+    _________________________________________________________________________________________________________________________
     \n`
     fs.appendFileSync("migrations/logs/prettyprint.out", printout);
     console.log(printout);

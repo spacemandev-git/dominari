@@ -28,6 +28,7 @@ pub struct SpaceMetadata {
 #[account]
 #[derive(Default)]
 pub struct Game {
+    pub id: String,
     pub coords: Coords,
     pub authority: Pubkey,
     pub enabled: bool,

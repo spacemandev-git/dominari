@@ -22,3 +22,4 @@
 ## Future Features
     - Set Game DAO Fee for initalization and builder harvests
     - Close Player Account? (Will lose points information...)
+    - Name locations and name Troops

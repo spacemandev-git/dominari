@@ -79,6 +79,14 @@ export class Dominari {
     }
 
     /**
+     * 
+     * @returns The Connection Object
+     */
+    public getConnection(){
+        return this._CONNECTION;
+    }
+    
+    /**
      * Starts up the event listener. Automatically does this on constructor, so shouldn't need to call it.
      */
     public setupEventListeners(){
@@ -175,6 +183,14 @@ export class Dominari {
      */
     public async getLocationsByAddress(addresses: String[]){
         return await this._PROGRAM.account.location.fetchMultiple(addresses.map(address => new anchor.web3.PublicKey(address)));
+    }
+
+    /**
+     * 
+     * @returns All the location accounts (All initialized locations)
+     */
+    public async getAllLocations(){
+        return await this._PROGRAM.account.location.all();
     }
 
     /**
@@ -288,6 +304,26 @@ export class Dominari {
         } catch (e) {
             throw e;
         }
+    }
+
+    /**
+     * 
+     * @returns All current games
+     */
+    public async getAllGames(){
+        return await this._PROGRAM.account.game.all();
+    }
+
+    /**
+     * Sets the current object's game account to the one given.
+     * @param id The ID of the game
+     * @param nx The Neighborhood X coordinate for the game
+     * @param ny The Neighborhood Y coordinate for the game
+     */
+    public setGame(id:string, nx:number, ny:number){
+        this.gameID = id;
+        this.gameNX = nx;
+        this.gameNY = ny;
     }
 
     /**

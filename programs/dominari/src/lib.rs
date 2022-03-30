@@ -210,6 +210,7 @@ pub mod dominari {
         // Units deployed are tied to a game, so the Location property should have a tag for current game
         // During unit movements you should check the game tag, and if it doesn't match the current game, then treat the units as not there
         let game = &mut ctx.accounts.game;
+        game.id = _id;
         game.coords = Coords {nx: nx, ny: ny, x:0, y:0};
         game.authority = ctx.accounts.authority.key();
         game.enabled = true;
@@ -310,7 +311,6 @@ pub mod dominari {
         let location = &mut ctx.accounts.location;
 
         let card: Card = player.cards.remove(usize::from(card_idx));
-        let clock = Clock::get().unwrap();
 
         match card.data {
             CardData::action => {
@@ -376,9 +376,10 @@ pub mod dominari {
                 location.troops = Some(Troop {
                     meta: card.meta,
                     data: stats,
-                    last_moved: clock.slot,
+                    last_moved: 0, //troop can always be moved when first played
                     gamekey: game.key()
-                })   
+                });
+                location.troop_owner = Some(player.key());   
             }
         }
         
@@ -418,7 +419,7 @@ pub mod dominari {
         //source troops must have surpassed their recovery threshold
         let clock = Clock::get().unwrap();
         let troops = source.troops.as_ref().unwrap();
-        if clock.slot < (troops.last_moved + troops.data.recovery as u64) {
+        if (troops.last_moved + troops.data.recovery as u64) > clock.slot {
             return Err(CustomError::InvalidMoveRecoveryCheck.into());
         }
 
@@ -448,13 +449,16 @@ pub mod dominari {
         let target = &mut ctx.accounts.target;
         let player = &mut ctx.accounts.player;
         
-        //If troops are NONE will throw an error
+        //If no troops on attacking or defending tiles throw an error
+        if source.troops == None || target.troops == None {
+            return Err(CustomError::InvalidAttackTroopsCheck.into())
+        }
+
         let attacking = source.troops.as_ref().unwrap().clone();
         let defending = target.troops.as_ref().unwrap().clone();
 
         //Source Troops belong to the player and target troops DO NOT
-        if source.troop_owner != Some(player.key()) || 
-        target.troop_owner == Some(player.key()) {
+        if source.troop_owner != Some(player.key()) || target.troop_owner == Some(player.key()) {
             return Err(CustomError::InvalidAttackOwnershipCheck.into())
         }
 
@@ -472,14 +476,15 @@ pub mod dominari {
         //attacking troops have recovered from previous move
         let clock = Clock::get().unwrap();
             //u64 can be inferred here because it's not a mod, so it will always be positive 
-        if (attacking.last_moved + attacking.data.recovery as u64) < clock.slot {
+            //when a troop is first played the last_moved is set to 0 to allow for instant movement
+        if (attacking.last_moved + attacking.data.recovery as u64) > clock.slot && attacking.last_moved != 0 {
             return Err(CustomError::InvalidAttackRecoveryCheck.into())
         }
+
         
         if attacking.data.range == 1 {
             let attacking_dmg = get_atk(&attacking, &defending, 0);
             let defending_dmg = get_atk(&defending, &attacking, 1);
-
             emit!(Combat { 
                 gamekey: game.key(),
                 source: source.coords,
@@ -539,6 +544,15 @@ pub mod dominari {
                 modified_defending.data.power = def_result as i8;
                 target.troops = Some(modified_defending);
             }
+        }
+
+        //Set last moved to clock.slot; can't do with existing declartions cause mess of logic above
+            //Could = None if they got wiped out
+        if source.troops != None {
+            let mut source_troops = source.troops.as_ref().unwrap().clone();
+            source_troops.last_moved = clock.slot;
+            source.troops = Some(source_troops);
+    
         }
         Ok(())
     }
@@ -659,7 +673,7 @@ pub mod dominari {
 
         //Check to see if the feature is in cooldown
         let clock = Clock::get().unwrap();
-        if (feature.last_used + feature.recovery) < clock.slot {
+        if (feature.last_used + feature.recovery) > clock.slot {
             return Err(CustomError::FeatureInCooldown.into())
         }
 
@@ -698,7 +712,9 @@ pub mod dominari {
                     return Err(CustomError::InvalidMoveGameCheck.into())
                 }
 
-                destination.troops = location.troops.clone();
+                let mut modified_troops = location.troops.as_ref().unwrap().clone();
+                modified_troops.last_moved = clock.slot;
+                destination.troops = Some(modified_troops);
                 destination.troop_owner = Some(player_acc.key());
                 destination.exit(ctx.program_id)?;
                 location.troops = None;
@@ -782,8 +798,8 @@ pub fn get_atk(attacking: &Troop, defending: &Troop, idx:usize) -> u8{
         attacking_power += attacking.data.mod_air as i16;
     } 
 
-    if attacking_power < u8::MIN.into() {
-        attacking_power = u8::MIN.into();
+    if attacking_power < 1 {
+        attacking_power = 1;
     }
 
     if attacking_power > u8::MAX.into() {
