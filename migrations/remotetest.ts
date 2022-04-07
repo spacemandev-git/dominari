@@ -14,6 +14,7 @@ async function main(){
     );
 
     await game.airdrop();
+    await new Promise (res => setTimeout(res, 10000));
     await game.registerPlayer("Player 1");
     console.log(await game.getPlayer());
 }
