@@ -241,7 +241,7 @@ pub mod dominari {
             meta: MetaInformation {
                 name: String::from("Scout"),
                 description: String::from("A basic Scout unit"),
-                link: String::from("Scout.png")
+                link: String::from("scout.png")
             },
             data: CardData::unit {
                 stats: StatInfo {
