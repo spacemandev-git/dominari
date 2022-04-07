@@ -19,7 +19,7 @@ use context::*;
 use event::*;
 use state::*;
 
-declare_id!("BGYHifTqRGUnJMfugZn5sbAZqjMR6bPZ98NmLcDeb7N7");
+declare_id!("domeqWjkc4X3nn2G6GvAMwNN96wV5WgRvUWVnt6LnsG");
 
 #[program]
 pub mod dominari {

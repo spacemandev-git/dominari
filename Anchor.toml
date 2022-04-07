@@ -1,7 +1,7 @@
 [features]
 seeds = false
 [programs.localnet]
-dominari = "BGYHifTqRGUnJMfugZn5sbAZqjMR6bPZ98NmLcDeb7N7"
+dominari = "domeqWjkc4X3nn2G6GvAMwNN96wV5WgRvUWVnt6LnsG"
 
 [registry]
 url = "https://anchor.projectserum.com"

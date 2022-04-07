@@ -45,6 +45,7 @@ pub struct Build<'info>{
         bump,
         seeds::program = Pubkey::from_str(SPACE_PID).unwrap()
     )]
+    /// CHECK: We check it in librs
     pub space_metadata_account: AccountInfo<'info>,
     
     #[account(mut)]
@@ -82,6 +83,7 @@ pub struct DestroyFeature<'info>{
 #[instruction(_id:String, nx: i64, ny:i64)]
 pub struct InitGame<'info>{
     #[account(
+        mut,
         constraint = authority.key() == Pubkey::from_str(ADMIN_KEY).unwrap()
     )]
     pub authority: Signer<'info>,
@@ -111,6 +113,7 @@ pub struct ToggleGame<'info>{
 
 #[derive(Accounts)]
 pub struct RegisterPlayer<'info>{
+    #[account(mut)]
     pub authority: Signer<'info>,
     pub system_program: Program<'info, System>,
     #[account(
@@ -133,6 +136,7 @@ pub struct RegisterPlayer<'info>{
 #[instruction(id:u64, cards:Vec<Card>)]
 pub struct InitDropTable<'info>{
     #[account(
+        mut,
         constraint = authority.key() == Pubkey::from_str(ADMIN_KEY).unwrap()
     )]
     pub authority: Signer<'info>,
@@ -163,6 +167,7 @@ pub struct SetDropTable<'info>{
 #[derive(Accounts)]
 pub struct InitBuildable<'info> {
     #[account(
+        mut,
         constraint = authority.key() == Pubkey::from_str(ADMIN_KEY).unwrap()
     )]
     pub authority: Signer<'info>,
@@ -258,6 +263,7 @@ pub struct HarvestBuilder<'info>{
         bump,
         seeds::program = Pubkey::from_str(SPACE_PID).unwrap()
     )]
+    /// CHECK: We check it in librs
     pub space_metadata_account: AccountInfo<'info>,
 }
 

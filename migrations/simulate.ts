@@ -18,7 +18,7 @@ export async function simulate(){
     const game:Dominari = await init(id,nx,ny);
     const game2:Dominari = new Dominari(
         "http://localhost:8899",
-        "BGYHifTqRGUnJMfugZn5sbAZqjMR6bPZ98NmLcDeb7N7",
+        "domeqWjkc4X3nn2G6GvAMwNN96wV5WgRvUWVnt6LnsG",
         anchor.web3.Keypair.fromSecretKey(bs58.decode(fs.readFileSync('migrations/assets/apollo2.txt').toString())),
         JSON.parse(fs.readFileSync('target/idl/dominari.json').toString()),
         nx,ny,id

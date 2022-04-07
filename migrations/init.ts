@@ -8,7 +8,7 @@ import * as anchor from '@project-serum/anchor';
 export async function init(id:string, nx:number, ny:number){
     const APOLLO_KEYPAIR = anchor.web3.Keypair.fromSecretKey(bs58.decode(fs.readFileSync('migrations/assets/apollo.txt').toString()))
     const CONN_STRING = "http://localhost:8899"; // devnet: https://psytrbhymqlkfrhudd.dev.genesysgo.net:8899/
-    const CONTRACT_ADDRESS = "BGYHifTqRGUnJMfugZn5sbAZqjMR6bPZ98NmLcDeb7N7";
+    const CONTRACT_ADDRESS = "domeqWjkc4X3nn2G6GvAMwNN96wV5WgRvUWVnt6LnsG";
     const IDL = JSON.parse(fs.readFileSync('target/idl/dominari.json').toString());
     const game = new Dominari(CONN_STRING, CONTRACT_ADDRESS, APOLLO_KEYPAIR, IDL);
 
