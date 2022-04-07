@@ -14,7 +14,7 @@ solana balance 7Tn83bS6TJquiCz9pXsCnYZpZmqPQrTjyeksPmJgURoS
 # Deploy the program
 echo "Deploying Program"
 solana program deploy target/deploy/dominari.so >/dev/null
-solana account BGYHifTqRGUnJMfugZn5sbAZqjMR6bPZ98NmLcDeb7N7
+solana account domeqWjkc4X3nn2G6GvAMwNN96wV5WgRvUWVnt6LnsG
 sleep 15
 # Run the Initalization Scripts
 # Clear Logs directory
