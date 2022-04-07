@@ -361,7 +361,7 @@ pub mod dominari {
                     modified_troops.data.recovery = modified_troops.data.recovery.saturating_add(stats.recovery.abs().try_into().unwrap());
                 } 
 
-
+                modified_troops.data.max_power = modified_troops.data.max_power.saturating_add(stats.max_power);
                 modified_troops.data.mod_inf = modified_troops.data.mod_inf.saturating_add(stats.mod_inf);
                 modified_troops.data.mod_armor = modified_troops.data.mod_armor.saturating_add(stats.mod_armor);
                 modified_troops.data.mod_air = modified_troops.data.mod_air.saturating_add(stats.mod_air);
