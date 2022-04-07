@@ -10,7 +10,7 @@ async function main(){
         "domeqWjkc4X3nn2G6GvAMwNN96wV5WgRvUWVnt6LnsG",
         anchor.web3.Keypair.fromSecretKey(bs58.decode(fs.readFileSync('migrations/assets/apollo2.txt').toString())),
         JSON.parse(fs.readFileSync('target/idl/dominari.json').toString()),
-        0,0,process.argv[2]
+        0,0,"game01"
     );
 
     await game.airdrop();
