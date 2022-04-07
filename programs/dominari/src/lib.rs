@@ -673,7 +673,7 @@ pub mod dominari {
 
         //Check to see if the feature is in cooldown
         let clock = Clock::get().unwrap();
-        if (feature.last_used + feature.recovery) > clock.slot {
+        if (feature.last_used + feature.recovery) > clock.slot && feature.last_used != 0{
             return Err(CustomError::FeatureInCooldown.into())
         }
 

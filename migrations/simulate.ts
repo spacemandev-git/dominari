@@ -65,13 +65,13 @@ export async function simulate(){
     //Build Features on four spaces
     fs.appendFileSync('migrations/logs/terminal.out', "Building Features\n");
     let buildablePromises = [];
-    // Build 2 portals on (-2,2) and (2,-2)
+    // Build 2 portals on (-2,2) and (2,2)
     buildablePromises.push(game.debugBuild({nx:0,ny:0,x:-2,y:2}, 0));
-    buildablePromises.push(game.debugBuild({nx:0,ny:0,x:2,y:-2}, 0));
-    // Build a healer on (0,1)
-    buildablePromises.push(game.debugBuild({nx:0,ny:0,x:0,y:1}, 1));
-    // Build a lootable feature of (1,0)
-    buildablePromises.push(game.debugBuild({nx:0,ny:0,x:1,y:0}, 2));
+    buildablePromises.push(game.debugBuild({nx:0,ny:0,x:2,y:2}, 0));
+    // Build a healer on (1,2)
+    buildablePromises.push(game.debugBuild({nx:0,ny:0,x:1,y:2}, 1));
+    // Build a lootable feature of (1,1)
+    buildablePromises.push(game.debugBuild({nx:0,ny:0,x:1,y:1}, 2));
     const locationAccountsAfterBuild = await Promise.all(buildablePromises);
     fs.appendFileSync("migrations/logs/terminal.out", JSON.stringify(locationAccountsAfterBuild, null, 2) + "\n\n");
     console.log("Building Portals, Healer and Lootable Feature on Grid");
@@ -96,27 +96,28 @@ export async function simulate(){
     await prettyPrint5x5(game, locationAddressesToCoordinate);
 
     //Attack from (1,1) to (1,2)
-    await new Promise(r => setTimeout(r, 2000));
     console.log("Attacking from (1,1) to (1,2)");
     let [src, dest] = await game.attack({nx,ny,x:1,y:1}, {nx,ny,x:1,y:2});
     await prettyPrint5x5(game, locationAddressesToCoordinate);
+    
+    //Activate village at 1,1
+    await game.activateLootableFeature({nx,ny,x:1, y:1});
+    console.log("Player after looting village: ", JSON.stringify(await game.getPlayer(), null, 2));
 
-    while(dest.troopOwner != null){
-        console.log("Last Moved: ", src.troops.lastMoved.toNumber());
-        console.log("Recovery: ", (<anchor.BN>src.troops.data['recovery']).toNumber());
-        console.log("Current Slot: ",await game.getConnection().getSlot());
-        console.log("Attacking from (1,1) to (1,2)");
-        try{
-            [src, dest] = await game.attack({nx,ny,x:1,y:1}, {nx,ny,x:1,y:2});
-            await prettyPrint5x5(game, locationAddressesToCoordinate);        
-        } catch (e) {
-            console.log("Source Troops recoverying..");
-            await new Promise(r => setTimeout(r, 2000));
-        }
-    }
-    console.log(JSON.stringify(await game.getAllPlayers(),null,2));
+    //Activate Healer at 1,2
+    console.log("Trying to activate healer...");
+    await game2.activateHealer({nx,ny,x:1,y:2});
+    await prettyPrint5x5(game, locationAddressesToCoordinate);
+    
+    //Move from 1,2 to 2,2
+    console.log("Moving from 1,2 to 2,2");
+    await game2.move({nx,ny, x:1,y:2}, {nx,ny,x:2,y:2});
+    await prettyPrint5x5(game, locationAddressesToCoordinate);
 
-    //MOVE from (1,1) to (1,2)
+    //Activate Portal to move from 2,2 to -2,2
+    console.log("Activating Portal...")
+    await game2.activatePortal({nx,ny, x:2,y:2}, {nx,ny,x:-2,y:2});
+    await prettyPrint5x5(game, locationAddressesToCoordinate);
 
     //Cleanup
     eventSubscription.unsubscribe();

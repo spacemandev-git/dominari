@@ -427,6 +427,30 @@ export class Dominari {
     }
 
     /**
+     * Returns the current player account.
+     * @returns The current player's account
+     */
+    public async getPlayer(){
+        if(!this.gameID){
+            throw new Error("Please initalize a game first!");
+        }
+
+        const [game_acc, game_bmp] = findProgramAddressSync([
+            Buffer.from(this.gameID),
+            byteify.serializeInt64(this.gameNX),
+            byteify.serializeInt64(this.gameNY)
+        ], this._PROGRAM.programId);
+
+        const [player_acc, player_bmp] = findProgramAddressSync([
+            game_acc.toBuffer(),
+            this._PROVIDER.wallet.publicKey.toBuffer()
+        ], this._PROGRAM.programId)
+
+        return await this._PROGRAM.account.player.fetch(player_acc);
+        
+    }
+
+    /**
      * Initializes a drop table with a given ID
      * @param id The id for the drop table
      * @param cards The list of cards for the drop table.
@@ -614,7 +638,7 @@ export class Dominari {
                 .moveTroops()
                 .accounts({
                     game: game_acc,
-                    soruce: source_acc,
+                    source: source_acc,
                     target: destination_acc,
                     player: player_acc,
                     authority: this._PROVIDER.wallet.publicKey
@@ -806,7 +830,7 @@ export class Dominari {
                     system: anchor.web3.SystemProgram.programId
                 })
                 .remainingAccounts([{
-                    isWriteable: true,
+                    isWritable: true,
                     isSigner: false,
                     pubkey: destination_acc
                 }])
@@ -848,7 +872,8 @@ export class Dominari {
         ], this._PROGRAM.programId);
         
         const sourceData = await this._PROGRAM.account.location.fetch(source_acc);
-        const dropTableId = sourceData?.feature?.properties['LootableFeature']['DropTableLadder'][sourceData.feature.rank];
+        const dropTableId = (<anchor.BN><any>sourceData?.feature?.properties['lootablefeature']['dropTableLadder'][sourceData.feature.rank-1]).toNumber();
+
         if(!dropTableId){
             throw new Error("Couldn't figure out location's Drop Table ID");
         }
@@ -867,7 +892,7 @@ export class Dominari {
                 system: anchor.web3.SystemProgram.programId
             })
             .remainingAccounts([{
-                isWriteable: false,
+                isWritable: false,
                 isSigner: false,
                 pubkey: dropTable_acc
             }])
