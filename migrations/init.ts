@@ -25,14 +25,14 @@ export async function init(id:string, nx:number, ny:number){
     })
     const droptable_accs = await Promise.all(dropTablePromises);
     droptable_accs.forEach((acc, idx) => {
-        fs.writeFileSync(`migrations/logs/droptable-${idx}.json`, JSON.stringify(acc, null,2));
+        fs.writeFileSync(`./migrations/logs/droptable-${idx}.json`, JSON.stringify(acc, null,2));
     })
     console.log(`Initialized ${droptables.length} Droptables.`);
 
     // Init Buildables
     let features = yml.loadAll(fs.readFileSync('migrations/assets/features.yml').toString());
     const buildable_acc = await game.initBuildable(features as Feature[]);
-    fs.writeFileSync(`migrations/logs/buildables.json`, JSON.stringify(buildable_acc, null, 2));
+    fs.writeFileSync(`./migrations/logs/buildables.json`, JSON.stringify(buildable_acc, null, 2));
     console.log(`Initialized ${features.length} Features.`);
 
     return game;
