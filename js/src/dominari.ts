@@ -154,6 +154,17 @@ export class Dominari {
     }
 
     /**
+     * Airdrops SOL into either the provided address or the address given in Provider
+     * @param address If provided, will airdrop to the specified address.
+     */
+    public async airdrop(address?:string){
+        if (!address){
+            address = this._PROVIDER.wallet.publicKey.toString();
+        }
+        await this._CONNECTION.requestAirdrop(new anchor.web3.PublicKey(address), 2*(1e9));
+    }
+
+    /**
      * Returns the list of deserialized location accounts by Coordinate pair
      * @param x The X coordinate of the space
      * @param y The Y coordinate of the space
