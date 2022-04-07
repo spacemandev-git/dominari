@@ -1,0 +1,122 @@
+- 
+  dropTableId: 1
+  id: 1
+  pointValue: 6
+  meta:
+    name: Scout infantry
+    description: A simple scout unit. 
+    link: scout.png
+  data: 
+    unit:
+      stats:
+        class:
+          infantry: {}
+        range: 1
+        power: 6
+        maxPower: 6
+        modInf: 0
+        modArmor: 0
+        modAir: 0
+        recovery: 30
+- 
+  dropTableId: 1
+  id: 2
+  pointValue: 2
+  meta:
+    name: Scout Drone
+    description: A standard drone unit
+    link: drone.png
+  data: 
+    unit:
+      stats:
+        class: 
+          aircraft: {}
+        range: 2
+        power: 2
+        maxPower: 2
+        modInf: 0
+        modArmor: 0
+        modAir: 0
+        recovery: 20
+---
+- 
+  dropTableId: 1
+  id: 1
+  pointValue: 6
+  meta:
+    name: Scout infantry
+    description: A simple scout unit. 
+    link: scout.png
+  data: 
+    unit:
+      stats:
+        class:
+          infantry: {}
+        range: 1
+        power: 6
+        maxPower: 6
+        modInf: 0
+        modArmor: 0
+        modAir: 0
+        recovery: 30
+- 
+  dropTableId: 1
+  id: 2
+  pointValue: 2
+  meta:
+    name: Scout Drone
+    description: A standard drone unit
+    link: drone.png
+  data: 
+    unit:
+      stats:
+        class: 
+          aircraft: {}
+        range: 2
+        power: 2
+        maxPower: 2
+        modInf: 0
+        modArmor: 0
+        modAir: 0
+        recovery: 20
+---
+- 
+  dropTableId: 1
+  id: 1
+  pointValue: 6
+  meta:
+    name: Scout infantry
+    description: A simple scout unit. 
+    link: scout.png
+  data: 
+    unit:
+      stats:
+        class:
+          infantry: {}
+        range: 1
+        power: 6
+        maxPower: 6
+        modInf: 0
+        modArmor: 0
+        modAir: 0
+        recovery: 30
+- 
+  dropTableId: 1
+  id: 2
+  pointValue: 2
+  meta:
+    name: Scout Drone
+    description: A standard drone unit
+    link: drone.png
+  data: 
+    unit:
+      stats:
+        class: 
+          aircraft: {}
+        range: 2
+        power: 2
+        maxPower: 2
+        modInf: 0
+        modArmor: 0
+        modAir: 0
+        recovery: 20

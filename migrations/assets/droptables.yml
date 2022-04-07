@@ -1,9 +1,8 @@
 - 
   dropTableId: 1
   id: 1
-  pointValue: 6
   meta:
-    name: Scout infantry
+    name: Scout
     description: A simple scout unit. 
     link: scout.png
   data: 
@@ -18,105 +17,229 @@
         modArmor: 0
         modAir: 0
         recovery: 30
+  pointValue: 4
 - 
   dropTableId: 1
   id: 2
-  pointValue: 2
   meta:
-    name: Scout Drone
-    description: A standard drone unit
+    name: Drone
+    description: A quick harrasser that can be upgraded with mods to become quite powerful. 
     link: drone.png
   data: 
     unit:
       stats:
-        class: 
-          aircraft: {}
-        range: 2
+        class:
+          infantry: {}
+        range: 1
         power: 2
         maxPower: 2
         modInf: 0
         modArmor: 0
         modAir: 0
-        recovery: 20
+        recovery: 10
+  pointValue: 2
+- 
+  dropTableId: 1
+  id: 3
+  meta:
+    name: Imperial Infantry
+    description: Organized and diligently trained. 
+    link: imperial_infantry.png
+  data: 
+    unit:
+      stats:
+        class:
+          infantry: {}
+        range: 1
+        power: 8
+        maxPower: 8
+        modInf: -1
+        modArmor: 0
+        modAir: 1
+        recovery: 60
+  pointValue: 8
+- 
+  dropTableId: 1
+  id: 4
+  meta:
+    name: Wild Infantry
+    description: Savage and primal, gene altered to terrify their enemies with their ferocity. 
+    link: wild_infantry.png
+  data: 
+    unit:
+      stats:
+        class:
+          infantry: {}
+        range: 1
+        power: 8
+        maxPower: 8
+        modInf: 1
+        modArmor: 0
+        modAir: -1
+        recovery: 60
+  pointValue: 8
+- 
+  dropTableId: 1
+  id: 5
+  meta:
+    name: Industrial Infantry
+    description: Well armed and populus, they'll drown their competition in a hail of bullets. 
+    link: industrial_infantry.png
+  data: 
+    unit:
+      stats:
+        class:
+          infantry: {}
+        range: 1
+        power: 8
+        maxPower: 8
+        modInf: 0
+        modArmor: 1
+        modAir: 0
+        recovery: 60
+  pointValue: 8
+- 
+  dropTableId: 1
+  id: 6
+  meta:
+    name: Raiders
+    description: Extremely fast moving scouts. 
+    link: raiders.png
+  data: 
+    unit:
+      stats:
+        class:
+          armor: {}
+        range: 1
+        power: 10
+        maxPower: 10
+        modInf: 1
+        modArmor: -2
+        modAir: 1
+        recovery: 15
+  pointValue: 10
 ---
 - 
-  dropTableId: 1
+  dropTableId: 2
   id: 1
-  pointValue: 6
   meta:
-    name: Scout infantry
-    description: A simple scout unit. 
-    link: scout.png
+    name: Imperial Tanks
+    description: Organized and diligently trained. 
+    link: imperial_tanks.png
+  data: 
+    unit:
+      stats:
+        class:
+          armor: {}
+        range: 2
+        power: 16
+        maxPower: 16
+        modInf: 0
+        modArmor: 0
+        modAir: 0
+        recovery: 100
+  pointValue: 16
+- 
+  dropTableId: 2
+  id: 2
+  meta:
+    name: Wild Bears
+    description: Savage and primal, gene altered to terrify their enemies with their ferocity. 
+    link: wild_bears.png
+  data: 
+    unit:
+      stats:
+        class:
+          armor: {}
+        range: 1
+        power: 12
+        maxPower: 12
+        modInf: 3
+        modArmor: -1
+        modAir: -1
+        recovery: 80
+  pointValue: 12
+- 
+  dropTableId: 2
+  id: 3
+  meta:
+    name: Industrial Mechs
+    description: Well armed and populus, they'll drown their competition in a hail of bullets.
+    link: industrial_mechs.png
+  data: 
+    unit:
+      stats:
+        class:
+          armor: {}
+        range: 1
+        power: 16
+        maxPower: 16
+        modInf: -1
+        modArmor: 2
+        modAir: -1
+        recovery: 100
+  pointValue: 16
+- 
+  dropTableId: 2
+  id: 4
+  meta:
+    name: Mechanized Infantry
+    description: Heavily armored and highly defensive. 
+    link: mechanized_infantry.png
   data: 
     unit:
       stats:
         class:
           infantry: {}
         range: 1
-        power: 6
-        maxPower: 6
-        modInf: 0
-        modArmor: 0
-        modAir: 0
-        recovery: 30
-- 
-  dropTableId: 1
-  id: 2
-  pointValue: 2
-  meta:
-    name: Scout Drone
-    description: A standard drone unit
-    link: drone.png
-  data: 
-    unit:
-      stats:
-        class: 
-          aircraft: {}
-        range: 2
-        power: 2
-        maxPower: 2
-        modInf: 0
-        modArmor: 0
-        modAir: 0
-        recovery: 20
+        power: 10
+        maxPower: 10
+        modInf: 1
+        modArmor: -2
+        modAir: 1
+        recovery: 80
+  pointValue: 10
 ---
 - 
-  dropTableId: 1
+  dropTableId: 3
   id: 1
-  pointValue: 6
   meta:
-    name: Scout infantry
-    description: A simple scout unit. 
-    link: scout.png
+    name: Jet
+    description: Ranged flying aircraft. 
+    link: jet.png
   data: 
     unit:
       stats:
         class:
-          infantry: {}
-        range: 1
-        power: 6
-        maxPower: 6
-        modInf: 0
-        modArmor: 0
-        modAir: 0
-        recovery: 30
+          aircraft: {}
+        range: 3
+        power: 20
+        maxPower: 20
+        modInf: -2
+        modArmor: 1
+        modAir: 1
+        recovery: 100
+  pointValue: 20
 - 
-  dropTableId: 1
+  dropTableId: 3
   id: 2
-  pointValue: 2
   meta:
-    name: Scout Drone
-    description: A standard drone unit
-    link: drone.png
+    name: Artillery
+    description: Long distance armor. 
+    link: artillery.png
   data: 
     unit:
       stats:
-        class: 
-          aircraft: {}
-        range: 2
-        power: 2
-        maxPower: 2
-        modInf: 0
+        class:
+          armor: {}
+        range: 3
+        power: 20
+        maxPower: 20
+        modInf: -2
         modArmor: 0
-        modAir: 0
-        recovery: 20
+        modAir: 2
+        recovery: 100
+  pointValue: 20
+
+
+

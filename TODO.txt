@@ -6,3 +6,4 @@
     - Lootable Feature that gives you X points every time you activate it (allow Builder to specify a player account and instead of it costing $, every time it's activated it shares poitns with the Builder and the Player that built it?)
         - Maybe Builder points allow them to collect percentage of the pot at the end.
         - Could be that scorable features can only be debug built by admin. Allow for them to exist on the 3rd layer, and randomly get created/destroyed all over the map
+    - Higher level drop tables should still have a chance of giving out items from a lower drop table?
