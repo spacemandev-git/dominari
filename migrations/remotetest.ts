@@ -4,7 +4,8 @@ import * as anchor from '@project-serum/anchor';
 import {bs58} from '@project-serum/anchor/dist/cjs/utils/bytes';
 
 async function main(){
-    const connString = "http://137.184.197.105:8899";
+    //const connString = "http://137.184.197.105:8899";
+    const connString  = "https://psytrbhymqlkfrhudd.dev.genesysgo.net:8899/";
     const game:Dominari = new Dominari(
         connString,
         "domeqWjkc4X3nn2G6GvAMwNN96wV5WgRvUWVnt6LnsG",
@@ -13,8 +14,8 @@ async function main(){
         0,0,"game01"
     );
 
-    await game.airdrop();
-    await new Promise (res => setTimeout(res, 10000));
+    //await game.airdrop();
+    //await new Promise (res => setTimeout(res, 10000));
     //await game.registerPlayer("Player 1");
     console.log(await game.getPlayer());
 }
